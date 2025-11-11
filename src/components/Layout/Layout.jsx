@@ -36,8 +36,8 @@ const Layout = () => {
       {/* Sidebar Drawer */}
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
 
-      {/* Main Content - Added extra top padding to prevent header overlap */}
-      <main className="pt-20 px-4 pb-4 sm:pt-24 sm:px-6 sm:pb-6 lg:pt-24 lg:px-8 lg:pb-8">
+      {/* Main Content */}
+      <main className="pt-6 px-4 pb-4 sm:pt-8 sm:px-6 sm:pb-6 lg:pt-10 lg:px-8 lg:pb-8">
         <div className="max-w-7xl mx-auto">
           <Outlet />
         </div>
