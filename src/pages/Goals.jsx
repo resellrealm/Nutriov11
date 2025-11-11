@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { 
-  Target, 
-  TrendingUp, 
-  Edit3, 
-  Save, 
+import {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, Area, AreaChart
+} from 'recharts';
+import {
+  Target,
+  TrendingUp,
+  Edit3,
+  Save,
   X,
   Plus,
   Calendar,
@@ -15,7 +19,11 @@ import {
   Zap,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
+  Flame,
+  TrendingDown,
+  Activity,
+  BarChart3
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -75,6 +83,40 @@ const Goals = () => {
   
   // Vitamins and minerals
   const micronutrients = ['vitaminA', 'vitaminC', 'vitaminD', 'calcium', 'iron'];
+
+  // Weekly progress data for charts
+  const [weeklyProgress] = useState([
+    { day: 'Mon', calories: 95, protein: 88, carbs: 92, fats: 98 },
+    { day: 'Tue', calories: 102, protein: 95, carbs: 98, fats: 105 },
+    { day: 'Wed', calories: 88, protein: 82, carbs: 85, fats: 90 },
+    { day: 'Thu', calories: 98, protein: 92, carbs: 95, fats: 100 },
+    { day: 'Fri', calories: 105, protein: 98, carbs: 102, fats: 95 },
+    { day: 'Sat', calories: 110, protein: 105, carbs: 108, fats: 98 },
+    { day: 'Sun', calories: 92, protein: 88, carbs: 90, fats: 85 }
+  ]);
+
+  // Monthly calorie trends
+  const [monthlyTrends] = useState([
+    { week: 'Week 1', target: 2000, actual: 1950, avgDiff: 50 },
+    { week: 'Week 2', target: 2000, actual: 2100, avgDiff: -100 },
+    { week: 'Week 3', target: 2000, actual: 1920, avgDiff: 80 },
+    { week: 'Week 4', target: 2000, actual: 2050, avgDiff: -50 }
+  ]);
+
+  // Statistics
+  const [stats] = useState({
+    currentStreak: 14,
+    longestStreak: 28,
+    totalDaysTracked: 127,
+    goalsMetToday: 3,
+    totalGoals: 4,
+    weeklySuccessRate: 82,
+    monthlySuccessRate: 78,
+    avgCaloriesPerDay: 1950,
+    avgProteinPerDay: 112,
+    bestDay: 'Friday',
+    improvementAreas: ['Fiber', 'Vitamin D']
+  });
 
   const handleSaveGoals = () => {
     toast.success('Goals updated successfully! 🎯');
@@ -391,7 +433,7 @@ const Goals = () => {
       </div>
 
       {/* Vitamins & Minerals */}
-      <div className="bg-white rounded-2xl shadow-card p-6">
+      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
           <Award className="mr-2 text-orange-500" size={20} />
           Vitamins & Minerals
@@ -408,6 +450,148 @@ const Goals = () => {
             />
           ))}
         </div>
+      </div>
+
+      {/* Statistics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm opacity-90">Current Streak</span>
+            <Flame size={20} />
+          </div>
+          <p className="text-3xl font-bold">{stats.currentStreak} days</p>
+          <p className="text-xs opacity-75 mt-1">Longest: {stats.longestStreak} days</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm opacity-90">Goals Met Today</span>
+            <CheckCircle size={20} />
+          </div>
+          <p className="text-3xl font-bold">{stats.goalsMetToday}/{stats.totalGoals}</p>
+          <p className="text-xs opacity-75 mt-1">{Math.round((stats.goalsMetToday/stats.totalGoals)*100)}% success rate</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm opacity-90">Weekly Success</span>
+            <TrendingUp size={20} />
+          </div>
+          <p className="text-3xl font-bold">{stats.weeklySuccessRate}%</p>
+          <p className="text-xs opacity-75 mt-1">Monthly: {stats.monthlySuccessRate}%</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm opacity-90">Days Tracked</span>
+            <Calendar size={20} />
+          </div>
+          <p className="text-3xl font-bold">{stats.totalDaysTracked}</p>
+          <p className="text-xs opacity-75 mt-1">Keep up the great work!</p>
+        </motion.div>
+      </div>
+
+      {/* Weekly Progress Chart */}
+      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <BarChart3 className="mr-2 text-primary" size={20} />
+          Weekly Goal Achievement (%)
+        </h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={weeklyProgress}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="day" />
+            <YAxis domain={[0, 120]} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="calories" fill="#10b981" name="Calories" />
+            <Bar dataKey="protein" fill="#3b82f6" name="Protein" />
+            <Bar dataKey="carbs" fill="#f59e0b" name="Carbs" />
+            <Bar dataKey="fats" fill="#8b5cf6" name="Fats" />
+          </BarChart>
+        </ResponsiveContainer>
+        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-600">
+          <Info size={16} />
+          <span>Target range: 90-110% of goal</span>
+        </div>
+      </div>
+
+      {/* Monthly Calorie Trends */}
+      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <Activity className="mr-2 text-accent" size={20} />
+          Monthly Calorie Trends
+        </h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <AreaChart data={monthlyTrends}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="week" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Area type="monotone" dataKey="target" stroke="#94a3b8" fill="#e2e8f0" name="Target" />
+            <Area type="monotone" dataKey="actual" stroke="#10b981" fill="#10b98120" name="Actual" />
+          </AreaChart>
+        </ResponsiveContainer>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+          <div className="text-center">
+            <p className="text-sm text-gray-600">Avg. Daily Calories</p>
+            <p className="text-xl font-bold text-gray-900">{stats.avgCaloriesPerDay}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">Avg. Daily Protein</p>
+            <p className="text-xl font-bold text-gray-900">{stats.avgProteinPerDay}g</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">Best Day</p>
+            <p className="text-xl font-bold text-emerald-600">{stats.bestDay}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">Consistency</p>
+            <p className="text-xl font-bold text-blue-600">{stats.weeklySuccessRate}%</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Improvement Areas */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+          <TrendingUp className="mr-2 text-amber-600" size={20} />
+          Areas for Improvement
+        </h3>
+        <div className="space-y-2">
+          {stats.improvementAreas.map((area, index) => (
+            <div key={index} className="flex items-center justify-between bg-white rounded-lg p-3">
+              <div className="flex items-center">
+                <AlertCircle className="text-amber-500 mr-2" size={18} />
+                <span className="font-medium text-gray-800">{area}</span>
+              </div>
+              <span className="text-sm text-gray-600">Needs attention</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-sm text-gray-600 mt-4">
+          💡 <strong>Tip:</strong> Focus on incorporating foods rich in {stats.improvementAreas[0].toLowerCase()} to meet your daily targets.
+        </p>
       </div>
 
       {/* Motivational Message */}

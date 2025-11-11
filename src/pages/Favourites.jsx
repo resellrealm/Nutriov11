@@ -140,21 +140,27 @@ const Favourites = () => {
     { id: 'snacks', name: 'Snacks', icon: "🍿" }
   ];
 
-  // Filter favourites based on tab, search, and category
+  // Enhanced filter with better search logic
   const filteredFavourites = favourites.filter(item => {
-    const matchesTab = 
+    const matchesTab =
       activeTab === 'favourites' ? true :
       activeTab === 'cookbook' ? item.source === 'cookbook' :
       activeTab === 'mealplan' ? false : true;
-    
-    const matchesSearch = 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesFilter = 
+
+    // Improved search: tokenize search query and match against multiple fields
+    const searchTerms = searchQuery.toLowerCase().trim().split(/\s+/);
+    const matchesSearch = searchQuery === '' || searchTerms.every(term =>
+      item.name.toLowerCase().includes(term) ||
+      item.description.toLowerCase().includes(term) ||
+      item.tags?.some(tag => tag.toLowerCase().includes(term)) ||
+      item.category?.toLowerCase().includes(term) ||
+      item.difficulty?.toLowerCase().includes(term) ||
+      item.cookbook?.toLowerCase().includes(term)
+    );
+
+    const matchesFilter =
       selectedFilter === 'all' || item.category === selectedFilter;
-    
+
     return matchesTab && matchesSearch && matchesFilter;
   });
 
@@ -631,7 +637,7 @@ const Favourites = () => {
               <button
                 key={cat.id}
                 onClick={() => setSelectedFilter(cat.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                   selectedFilter === cat.id
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

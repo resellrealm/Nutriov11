@@ -3,8 +3,8 @@ import { Menu } from 'lucide-react';
 
 const StickyHeader = ({ title, onMenuClick, children }) => {
   return (
-    <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-700 backdrop-blur">
-      <div className="px-4 py-3 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-700 backdrop-blur shadow-sm">
+      <div className="px-4 py-4 flex items-center justify-between">
         {/* Left: menu + title */}
         <div className="flex items-center space-x-3">
           <button

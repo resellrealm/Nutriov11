@@ -24,6 +24,8 @@ const MealPlanner = () => {
   const [fridgeScanned, setFridgeScanned] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [suggestedMeals, setSuggestedMeals] = useState([]);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [detectedIngredients, setDetectedIngredients] = useState([]);
 
   const mealTypes = [
     { id: 'breakfast', name: 'Breakfast', icon: Coffee, emoji: '🌅' },
@@ -38,57 +40,173 @@ const MealPlanner = () => {
     { id: 'hard', name: 'Hard', time: '40+ min', color: 'text-red-500' }
   ];
 
-  const scanFridge = () => {
-    toast.success('Scanning your fridge/cupboard...');
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadedImage(reader.result);
+        analyzeFridgePhoto(file);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      toast.error('Please upload a valid image file');
+    }
+  };
+
+  const analyzeFridgePhoto = (file) => {
+    toast.success('Analyzing your ingredients...');
+
+    // Simulate AI analysis with realistic delay
     setTimeout(() => {
+      // In real implementation, this would call an AI API
+      const mockIngredients = [
+        'Eggs', 'Avocado', 'Bread', 'Tomatoes', 'Quinoa',
+        'Broccoli', 'Sweet potato', 'Chickpeas', 'Hummus',
+        'Bell peppers', 'Feta cheese', 'Olive oil'
+      ];
+      setDetectedIngredients(mockIngredients);
       setFridgeScanned(true);
-      toast.success('Found 12 ingredients!');
-    }, 2000);
+      toast.success(`Found ${mockIngredients.length} ingredients!`);
+    }, 2500);
+  };
+
+  const scanFridge = () => {
+    // Trigger file input
+    document.getElementById('fridge-photo-input').click();
   };
 
   const generateMealPlan = () => {
     setIsGenerating(true);
-    
+
+    // In real implementation, this would call a recipe API with detected ingredients
     setTimeout(() => {
-      setSuggestedMeals([
-        {
-          id: 1,
-          name: 'Avocado Toast with Poached Egg',
-          description: 'Whole grain toast topped with mashed avocado, poached egg, and cherry tomatoes',
-          cookTime: '15 min',
-          difficulty: 'Easy',
-          calories: 380,
-          protein: 18,
-          ingredients: ['Whole grain bread', 'Avocado', 'Eggs', 'Cherry tomatoes'],
-          matchScore: 95,
-          image: '/api/placeholder/300/200'
-        },
-        {
-          id: 2,
-          name: 'Quinoa Power Bowl',
-          description: 'Nutritious bowl with quinoa, roasted vegetables, and tahini dressing',
-          cookTime: '25 min',
-          difficulty: 'Easy',
-          calories: 420,
-          protein: 15,
-          ingredients: ['Quinoa', 'Broccoli', 'Sweet potato', 'Chickpeas'],
-          matchScore: 88,
-          image: '/api/placeholder/300/200'
-        },
-        {
-          id: 3,
-          name: 'Mediterranean Wrap',
-          description: 'Whole wheat wrap with hummus, grilled vegetables, and feta cheese',
-          cookTime: '10 min',
-          difficulty: 'Easy',
-          calories: 350,
-          protein: 14,
-          ingredients: ['Whole wheat tortilla', 'Hummus', 'Bell peppers', 'Feta cheese'],
-          matchScore: 82,
-          image: '/api/placeholder/300/200'
-        }
-      ]);
+      // Generate recipes based on available ingredients and preferences
+      const allRecipes = {
+        breakfast: [
+          {
+            id: 1,
+            name: 'Avocado Toast with Poached Egg',
+            description: 'Whole grain toast topped with mashed avocado, poached egg, and cherry tomatoes',
+            cookTime: '15 min',
+            difficulty: 'Easy',
+            calories: 380,
+            protein: 18,
+            ingredients: ['Bread', 'Avocado', 'Eggs', 'Tomatoes'],
+            matchScore: 95,
+            image: '/api/placeholder/300/200'
+          },
+          {
+            id: 2,
+            name: 'Veggie Omelette',
+            description: 'Fluffy omelette with bell peppers, tomatoes, and feta cheese',
+            cookTime: '12 min',
+            difficulty: 'Easy',
+            calories: 320,
+            protein: 22,
+            ingredients: ['Eggs', 'Bell peppers', 'Tomatoes', 'Feta cheese'],
+            matchScore: 92,
+            image: '/api/placeholder/300/200'
+          }
+        ],
+        lunch: [
+          {
+            id: 3,
+            name: 'Quinoa Power Bowl',
+            description: 'Nutritious bowl with quinoa, roasted vegetables, and tahini dressing',
+            cookTime: '25 min',
+            difficulty: 'Medium',
+            calories: 420,
+            protein: 15,
+            ingredients: ['Quinoa', 'Broccoli', 'Sweet potato', 'Chickpeas'],
+            matchScore: 88,
+            image: '/api/placeholder/300/200'
+          },
+          {
+            id: 4,
+            name: 'Mediterranean Wrap',
+            description: 'Whole wheat wrap with hummus, grilled vegetables, and feta cheese',
+            cookTime: '10 min',
+            difficulty: 'Easy',
+            calories: 350,
+            protein: 14,
+            ingredients: ['Bread', 'Hummus', 'Bell peppers', 'Feta cheese'],
+            matchScore: 85,
+            image: '/api/placeholder/300/200'
+          }
+        ],
+        dinner: [
+          {
+            id: 5,
+            name: 'Roasted Veggie Quinoa',
+            description: 'Hearty quinoa with roasted sweet potato, broccoli, and chickpeas',
+            cookTime: '35 min',
+            difficulty: 'Medium',
+            calories: 480,
+            protein: 16,
+            ingredients: ['Quinoa', 'Sweet potato', 'Broccoli', 'Chickpeas', 'Olive oil'],
+            matchScore: 90,
+            image: '/api/placeholder/300/200'
+          },
+          {
+            id: 6,
+            name: 'Stuffed Bell Peppers',
+            description: 'Bell peppers stuffed with quinoa, chickpeas, and feta',
+            cookTime: '40 min',
+            difficulty: 'Hard',
+            calories: 390,
+            protein: 17,
+            ingredients: ['Bell peppers', 'Quinoa', 'Chickpeas', 'Feta cheese', 'Tomatoes'],
+            matchScore: 87,
+            image: '/api/placeholder/300/200'
+          }
+        ],
+        snack: [
+          {
+            id: 7,
+            name: 'Hummus & Veggie Sticks',
+            description: 'Fresh bell peppers and broccoli with creamy hummus',
+            cookTime: '5 min',
+            difficulty: 'Easy',
+            calories: 150,
+            protein: 6,
+            ingredients: ['Hummus', 'Bell peppers', 'Broccoli'],
+            matchScore: 95,
+            image: '/api/placeholder/300/200'
+          },
+          {
+            id: 8,
+            name: 'Avocado Toast Bites',
+            description: 'Mini toast slices with mashed avocado and tomato',
+            cookTime: '8 min',
+            difficulty: 'Easy',
+            calories: 180,
+            protein: 5,
+            ingredients: ['Bread', 'Avocado', 'Tomatoes'],
+            matchScore: 88,
+            image: '/api/placeholder/300/200'
+          }
+        ]
+      };
+
+      // Filter by meal type and difficulty
+      let recipes = allRecipes[selectedMealType] || [];
+      if (selectedDifficulty !== 'all') {
+        recipes = recipes.filter(r => r.difficulty.toLowerCase() === selectedDifficulty);
+      }
+
+      // Calculate match score based on available ingredients
+      recipes = recipes.map(recipe => {
+        const matchingIngredients = recipe.ingredients.filter(ing =>
+          detectedIngredients.some(det => det.toLowerCase().includes(ing.toLowerCase()))
+        );
+        const matchScore = Math.round((matchingIngredients.length / recipe.ingredients.length) * 100);
+        return { ...recipe, matchScore };
+      }).sort((a, b) => b.matchScore - a.matchScore);
+
+      setSuggestedMeals(recipes);
       setIsGenerating(false);
+      toast.success(`Found ${recipes.length} recipes matching your ingredients!`);
     }, 2000);
   };
 
@@ -179,6 +297,16 @@ const MealPlanner = () => {
           )}
         </div>
         
+        {/* Hidden file input */}
+        <input
+          id="fridge-photo-input"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+
         {!fridgeScanned ? (
           <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
             <Camera className="mx-auto text-gray-400 mb-3" size={48} />
@@ -188,26 +316,40 @@ const MealPlanner = () => {
               className="bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
             >
               <Camera size={20} className="inline mr-2" />
-              Scan Ingredients
+              Upload Photo
             </button>
+            <p className="text-xs text-gray-500 mt-3">Supports JPG, PNG, HEIC</p>
           </div>
         ) : (
-          <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-green-700 font-medium mb-2">Detected ingredients:</p>
-            <div className="flex flex-wrap gap-2">
-              {['Eggs', 'Avocado', 'Bread', 'Tomatoes', 'Quinoa', 'Broccoli', 'Sweet potato', 'Chickpeas', 'Hummus', 'Bell peppers', 'Feta cheese', 'Olive oil'].map(item => (
-                <span key={item} className="bg-white px-3 py-1 rounded-full text-sm text-gray-700">
-                  {item}
-                </span>
-              ))}
+          <div>
+            {uploadedImage && (
+              <div className="mb-4">
+                <img
+                  src={uploadedImage}
+                  alt="Uploaded fridge"
+                  className="w-full max-h-64 object-cover rounded-lg"
+                />
+              </div>
+            )}
+            <div className="bg-green-50 rounded-lg p-4">
+              <p className="text-green-700 font-medium mb-2">
+                Detected {detectedIngredients.length} ingredients:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {detectedIngredients.map((item, index) => (
+                  <span key={index} className="bg-white px-3 py-1 rounded-full text-sm text-gray-700 shadow-sm">
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={scanFridge}
+                className="mt-3 text-sm text-green-600 hover:text-green-700 font-medium flex items-center"
+              >
+                <RefreshCw size={14} className="mr-1" />
+                Upload New Photo
+              </button>
             </div>
-            <button
-              onClick={scanFridge}
-              className="mt-3 text-sm text-green-600 hover:text-green-700 font-medium"
-            >
-              <RefreshCw size={14} className="inline mr-1" />
-              Rescan
-            </button>
           </div>
         )}
       </motion.div>
