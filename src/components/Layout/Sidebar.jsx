@@ -59,9 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <>
                   <Icon
                     size={20}
-                    className={`${
-                      isActive ? 'text-emerald-500' : color
-                    } transition-colors	duration-200`}
+                    className={`${color} transition-colors duration-200`}
                   />
                   <span>{label}</span>
                 </>
@@ -89,7 +87,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:left-0 bg-white/95 dark:bg-gray-900/95 border-r border-gray-200 dark:border-gray-800">
-        <div className="h-full flex flex-col pt-4">
+        <div className="h-full flex flex-col safe-area-top pt-4">
           <div className="px-4 pb-2">
             <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
               Nutrio
@@ -118,7 +116,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
             {/* Drawer */}
             <motion.aside
-              className="fixed inset-y-0 left-0 z-50 w-72 max-w-full bg-white dark:bg-gray-900 shadow-xl lg:hidden flex flex-col"
+              className="fixed inset-y-0 left-0 z-50 w-72 max-w-full bg-white dark:bg-gray-900 shadow-xl lg:hidden flex flex-col safe-area-top"
               initial={{ x: -320 }}
               animate={{ x: 0 }}
               exit={{ x: -320 }}
