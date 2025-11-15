@@ -31,6 +31,7 @@ const Layout = () => {
       <StickyHeader
         title={getPageTitle(location.pathname)}
         onMenuClick={toggleSidebar}
+        isSidebarOpen={isSidebarOpen}
       />
 
       {/* Sidebar Drawer */}
