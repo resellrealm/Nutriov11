@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { nextStep, previousStep, saveProgress, completeOnboarding } from '../../store/onboardingSlice';
 
 // Import step components
@@ -200,17 +200,10 @@ const OnboardingFlow = () => {
               <ArrowLeft className="w-5 h-5" />
               <span className="hidden sm:inline">Back</span>
             </button>
-            
-            {/* Save Button */}
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
-              aria-label="Save progress"
-            >
-              <Save className="w-5 h-5" />
-              <span className="hidden sm:inline">Save</span>
-            </button>
-            
+
+            {/* Spacer */}
+            <div className="flex-1"></div>
+
             {/* Next/Complete Button */}
             <button
               onClick={handleNext}

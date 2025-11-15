@@ -102,9 +102,16 @@ const onboardingSlice = createSlice({
     },
     
     validateStep2: (state) => {
-      const isValid = state.weightGoal && state.pace && state.targetDate;
+      // For maintain weight, only weightGoal is required
+      // For lose/gain, weightGoal and pace are required
+      let isValid;
+      if (state.weightGoal === 'maintain') {
+        isValid = !!state.weightGoal;
+      } else {
+        isValid = state.weightGoal && state.pace;
+      }
       state.stepValidation[2] = isValid;
-      state.errors[2] = isValid ? null : 'Please complete all goal fields';
+      state.errors[2] = isValid ? null : 'Please complete all required goal fields';
     },
     
     // Step 3: Body Metrics
