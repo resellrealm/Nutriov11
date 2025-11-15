@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { 
-  Camera, 
-  Upload, 
+import {
+  Camera,
+  Upload,
   Sparkles,
   Info,
   Plus,
@@ -10,15 +11,31 @@ import {
   TrendingUp,
   AlertCircle,
   Check,
-  X
+  X,
+  ScanBarcode,
+  Crown
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { incrementDailyScans, resetDailyScans } from '../store/authSlice';
 
 const MealAnalyzer = () => {
+  const dispatch = useDispatch();
+  const isPremium = useSelector(state => state.auth.isPremium);
+  const dailyScansUsed = useSelector(state => state.auth.dailyScansUsed);
+  const lastScanDate = useSelector(state => state.auth.lastScanDate);
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [scanMode, setScanMode] = useState('meal'); // 'meal' or 'barcode'
+
+  const MAX_DAILY_SCANS = 2;
+
+  useEffect(() => {
+    // Reset scans if it's a new day
+    dispatch(resetDailyScans());
+  }, [dispatch]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -32,36 +49,82 @@ const MealAnalyzer = () => {
     }
   };
 
+  const canScanMeal = () => {
+    if (isPremium) return true;
+    if (scanMode === 'barcode') return true; // Unlimited barcode scans
+    return dailyScansUsed < MAX_DAILY_SCANS;
+  };
+
   const analyzeMeal = () => {
+    // Check scan limits for basic users
+    if (!canScanMeal()) {
+      toast.error(`Daily limit reached! Upgrade to Premium for unlimited scans.`, {
+        duration: 4000,
+        icon: '🔒',
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
-    
+
+    // Increment scan count for meal scans (not barcode)
+    if (scanMode === 'meal') {
+      dispatch(incrementDailyScans());
+    }
+
     // Simulate AI analysis
     setTimeout(() => {
-      setAnalysisResult({
-        name: 'Grilled Chicken Salad',
-        confidence: 92,
-        nutrition: {
-          calories: 385,
-          protein: 42,
-          carbs: 18,
-          fats: 16,
-          fiber: 6
-        },
-        ingredients: [
-          'Grilled chicken breast (150g)',
-          'Mixed greens (100g)',
-          'Cherry tomatoes (50g)',
-          'Cucumber (50g)',
-          'Olive oil dressing (15ml)'
-        ],
-        suggestions: [
-          { text: 'Add quinoa for more complex carbs', type: 'improve' },
-          { text: 'Great protein content!', type: 'positive' },
-          { text: 'Consider adding avocado for healthy fats', type: 'improve' }
-        ]
-      });
+      if (scanMode === 'barcode') {
+        setAnalysisResult({
+          name: 'Nature Valley Granola Bar',
+          confidence: 98,
+          barcode: '016000275287',
+          nutrition: {
+            calories: 190,
+            protein: 4,
+            carbs: 29,
+            fats: 7,
+            fiber: 2
+          },
+          ingredients: [
+            'Whole Grain Oats',
+            'Sugar',
+            'Canola Oil',
+            'Rice Flour',
+            'Honey'
+          ],
+          suggestions: [
+            { text: 'Contains added sugars', type: 'improve' },
+            { text: 'Good source of whole grains', type: 'positive' }
+          ]
+        });
+      } else {
+        setAnalysisResult({
+          name: 'Grilled Chicken Salad',
+          confidence: 92,
+          nutrition: {
+            calories: 385,
+            protein: 42,
+            carbs: 18,
+            fats: 16,
+            fiber: 6
+          },
+          ingredients: [
+            'Grilled chicken breast (150g)',
+            'Mixed greens (100g)',
+            'Cherry tomatoes (50g)',
+            'Cucumber (50g)',
+            'Olive oil dressing (15ml)'
+          ],
+          suggestions: [
+            { text: 'Add quinoa for more complex carbs', type: 'improve' },
+            { text: 'Great protein content!', type: 'positive' },
+            { text: 'Consider adding avocado for healthy fats', type: 'improve' }
+          ]
+        });
+      }
       setIsAnalyzing(false);
-      toast.success('Meal analyzed successfully!');
+      toast.success(scanMode === 'barcode' ? 'Barcode scanned!' : 'Meal analyzed successfully!');
     }, 2000);
   };
 
@@ -72,15 +135,72 @@ const MealAnalyzer = () => {
     setAnalysisResult(null);
   };
 
+  const remainingScans = isPremium ? '∞' : Math.max(0, MAX_DAILY_SCANS - dailyScansUsed);
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center">
-          <Camera className="mr-3 text-primary" size={32} />
-          Analyze Your Meal
-        </h1>
-        <p className="text-gray-600 mt-2">Take a photo or upload an image of your food for instant nutrition analysis</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+              <Camera className="mr-3 text-primary" size={32} />
+              Analyze Your Meal
+            </h1>
+            <p className="text-gray-600 mt-2">Take a photo or upload an image of your food for instant nutrition analysis</p>
+          </div>
+          {!isPremium && scanMode === 'meal' && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 text-center">
+              <p className="text-sm text-gray-600">Daily Scans</p>
+              <p className="text-2xl font-bold text-amber-600">{remainingScans}/{MAX_DAILY_SCANS}</p>
+              <button className="mt-2 text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1 rounded-full hover:shadow-lg transition-all flex items-center mx-auto">
+                <Crown size={12} className="mr-1" />
+                Upgrade
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Scan Mode Selector */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div className="flex items-center space-x-4">
+          <span className="text-gray-700 font-medium">Scan Type:</span>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => {
+                setScanMode('meal');
+                setSelectedImage(null);
+                setAnalysisResult(null);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2 ${
+                scanMode === 'meal'
+                  ? 'bg-gradient-to-r from-primary to-accent text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Camera size={18} />
+              <span>Meal Photo</span>
+              {!isPremium && <span className="text-xs opacity-75">({remainingScans} left)</span>}
+            </button>
+            <button
+              onClick={() => {
+                setScanMode('barcode');
+                setSelectedImage(null);
+                setAnalysisResult(null);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2 ${
+                scanMode === 'barcode'
+                  ? 'bg-gradient-to-r from-primary to-accent text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <ScanBarcode size={18} />
+              <span>Barcode</span>
+              <span className="text-xs opacity-75">(Unlimited)</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Upload Section */}
@@ -91,9 +211,19 @@ const MealAnalyzer = () => {
           className="bg-white rounded-2xl shadow-card p-8"
         >
           <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-            <Camera className="mx-auto text-gray-400 mb-4" size={64} />
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Upload Food Photo</h3>
-            <p className="text-gray-600 mb-6">Take a photo or select from your gallery</p>
+            {scanMode === 'meal' ? (
+              <Camera className="mx-auto text-gray-400 mb-4" size={64} />
+            ) : (
+              <ScanBarcode className="mx-auto text-gray-400 mb-4" size={64} />
+            )}
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              {scanMode === 'meal' ? 'Upload Food Photo' : 'Scan Barcode'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {scanMode === 'meal'
+                ? 'Take a photo or select from your gallery'
+                : 'Scan product barcode for instant nutrition facts'}
+            </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <label className="bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 cursor-pointer flex items-center">

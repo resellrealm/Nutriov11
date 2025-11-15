@@ -31,11 +31,12 @@ body {
 
 /* Safe area padding for iOS notch/status bar */
 .safe-area-top {
-  padding-top: max(env(safe-area-inset-top), 20px);
+  padding-top: max(env(safe-area-inset-top), 60px);
+  margin-top: env(safe-area-inset-top);
 }
 
 .safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: max(env(safe-area-inset-bottom), 20px);
 }
 
 /* Dark mode styles */

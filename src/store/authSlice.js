@@ -7,6 +7,9 @@ const initialState = {
   isLoading: false,
   error: null,
   hasCompletedOnboarding: false,
+  isPremium: false, // Default to basic plan
+  dailyScansUsed: 0,
+  lastScanDate: null,
 };
 
 const authSlice = createSlice({
@@ -43,6 +46,30 @@ const authSlice = createSlice({
     updateUser: (state, action) => {
       state.user = { ...state.user, ...action.payload };
     },
+    setPremiumStatus: (state, action) => {
+      state.isPremium = action.payload;
+      localStorage.setItem('isPremium', action.payload.toString());
+    },
+    incrementDailyScans: (state) => {
+      const today = new Date().toDateString();
+      if (state.lastScanDate !== today) {
+        state.dailyScansUsed = 1;
+        state.lastScanDate = today;
+      } else {
+        state.dailyScansUsed += 1;
+      }
+      localStorage.setItem('dailyScansUsed', state.dailyScansUsed.toString());
+      localStorage.setItem('lastScanDate', state.lastScanDate);
+    },
+    resetDailyScans: (state) => {
+      const today = new Date().toDateString();
+      if (state.lastScanDate !== today) {
+        state.dailyScansUsed = 0;
+        state.lastScanDate = today;
+        localStorage.setItem('dailyScansUsed', '0');
+        localStorage.setItem('lastScanDate', today);
+      }
+    },
   },
 });
 
@@ -53,6 +80,9 @@ export const {
   logout,
   setOnboardingComplete,
   updateUser,
+  setPremiumStatus,
+  incrementDailyScans,
+  resetDailyScans,
 } = authSlice.actions;
 
 export default authSlice.reducer;
