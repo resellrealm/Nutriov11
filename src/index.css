@@ -31,12 +31,19 @@ body {
 
 /* Safe area padding for iOS notch/status bar */
 .safe-area-top {
-  padding-top: max(env(safe-area-inset-top), 60px);
-  margin-top: env(safe-area-inset-top);
+  padding-top: calc(env(safe-area-inset-top) + 16px);
 }
 
 .safe-area-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom), 20px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+}
+
+/* iOS specific fixes */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: constant(safe-area-inset-top); /* iOS 11.0 */
+    padding-top: env(safe-area-inset-top); /* iOS 11.2+ */
+  }
 }
 
 /* Dark mode styles */

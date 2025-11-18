@@ -38,9 +38,9 @@ const Layout = () => {
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
 
       {/* Main Content */}
-      <main className="pt-6 px-4 pb-4 sm:pt-8 sm:px-6 sm:pb-6 lg:pt-10 lg:px-8 lg:pb-8">
+      <main className="pt-6 px-4 pb-4 sm:pt-8 sm:px-6 sm:pb-6 lg:pt-10 lg:px-8 lg:pb-8 lg:ml-64">
         <div className="max-w-7xl mx-auto">
-          <Outlet />
+          <Outlet key={location.pathname} />
         </div>
       </main>
     </div>

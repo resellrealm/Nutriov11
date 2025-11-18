@@ -29,14 +29,14 @@ const Sidebar = ({ isOpen, onClose }) => {
   // Navigation items – paths aligned with App.jsx routes
   const navItems = [
     {
-      path: '/dashboard',
+      path: '/',
       icon: LayoutDashboard,
       label: 'Dashboard',
       color: 'text-emerald-500',
       premiumOnly: false,
     },
     {
-      path: '/meal-analyzer',
+      path: '/analyze',
       icon: Camera,
       label: 'Analyze Meal',
       color: 'text-cyan-500',
@@ -134,16 +134,12 @@ const Sidebar = ({ isOpen, onClose }) => {
                 }
                 aria-disabled={isLocked ? 'true' : undefined}
               >
-                {() => (
-                  <>
-                    <Icon
-                      size={20}
-                      className={`${color} transition-colors duration-200`}
-                    />
-                    <span className="flex-1">{label}</span>
-                    {isLocked && <Lock size={14} className="text-gray-400" />}
-                  </>
-                )}
+                <Icon
+                  size={20}
+                  className={`${color} transition-colors duration-200`}
+                />
+                <span className="flex-1">{label}</span>
+                {isLocked && <Lock size={14} className="text-gray-400" />}
               </NavLink>
             </li>
           );

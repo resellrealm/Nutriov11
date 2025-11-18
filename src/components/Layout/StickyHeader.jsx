@@ -6,11 +6,11 @@ const StickyHeader = ({ title, onMenuClick, isSidebarOpen, children }) => {
     <header
       className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-700 backdrop-blur"
       style={{
-        paddingTop: 'max(0px, env(safe-area-inset-top))',
+        paddingTop: 'calc(env(safe-area-inset-top) + 8px)',
         minHeight: '60px',
       }}
     >
-      <div className="px-4 py-3 flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center justify-between" style={{ paddingBottom: '12px' }}>
         {/* Left: menu + title */}
         <div className="flex items-center space-x-3">
           {/* Hide hamburger when sidebar is open on mobile */}
