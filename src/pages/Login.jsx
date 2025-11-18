@@ -20,6 +20,8 @@ const Login = () => {
     localStorage.setItem('userLevel', '5');
     localStorage.setItem('userPoints', '450');
     localStorage.setItem('userStreak', '7');
+    // Set onboarding as complete for returning users
+    localStorage.setItem('onboardingComplete', 'true');
     toast.success('Welcome back!');
     navigate('/');
   };
