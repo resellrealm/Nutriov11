@@ -74,6 +74,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (userId) {
       fetchDashboardData();
+    } else {
+      // No user ID available, stop loading
+      setLoading(false);
     }
   }, [userId]);
 

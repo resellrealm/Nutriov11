@@ -7,18 +7,17 @@ const LoadingScreen = ({ onLoadingComplete }) => {
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((oldProgress) => {
-        if (oldProgress === 100) {
+        if (oldProgress >= 100) {
           clearInterval(timer);
           setTimeout(() => {
             onLoadingComplete();
-          }, 500);
+          }, 300);
           return 100;
         }
-        // Slower progress for smoother loading experience
-        const diff = Math.random() * 8;
-        return Math.min(oldProgress + diff, 100);
+        // Consistent progress: 10% every 150ms = ~1.5 seconds to complete
+        return Math.min(oldProgress + 10, 100);
       });
-    }, 200);
+    }, 150);
 
     return () => {
       clearInterval(timer);

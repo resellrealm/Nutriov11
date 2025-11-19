@@ -28,6 +28,9 @@ const GroceryList = () => {
     if (userId) {
       loadGroceryLists();
       loadUserProfile();
+    } else {
+      // No user ID available, stop loading
+      setIsLoading(false);
     }
   }, [userId]);
 
@@ -149,8 +152,9 @@ const GroceryList = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-gray-600 dark:text-gray-400">Loading your grocery lists...</p>
       </div>
     );
   }
