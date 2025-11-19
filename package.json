@@ -27,7 +27,8 @@
     "react-confetti": "^6.1.0",
     "clsx": "^2.0.0",
     "tailwind-merge": "^2.2.0",
-    "firebase": "^10.7.0"
+    "firebase": "^10.7.0",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

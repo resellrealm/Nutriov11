@@ -45,6 +45,17 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Auth Required Route - only checks authentication, not onboarding
+const AuthRequiredRoute = ({ children }) => {
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+};
+
 // Inner app component that can use hooks
 function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
@@ -115,7 +126,14 @@ function AppContent() {
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/onboarding" element={<OnboardingFlowV2 />} />
+              <Route
+                path="/onboarding"
+                element={
+                  <AuthRequiredRoute>
+                    <OnboardingFlowV2 />
+                  </AuthRequiredRoute>
+                }
+              />
 
               {/* Barcode Scanner - Full Screen (Outside Layout) */}
               <Route
