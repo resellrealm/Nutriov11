@@ -295,7 +295,7 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 truncate">
           Welcome back, {userProfile.basicInfo?.fullName || 'there'}! 👋
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
