@@ -1,5 +1,10 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import {
+  ERROR_CODES,
+  handleStorageError,
+  getErrorMessage
+} from './errorCodes';
 
 // Tailwind CSS class merger
 export function cn(...inputs) {
@@ -187,35 +192,46 @@ export const getLevelTitle = (level) => {
   return 'Nutrition Legend';
 };
 
-// Storage helpers
+// Storage helpers with improved error handling
 export const storage = {
   get: (key, defaultValue = null) => {
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
-    } catch {
+    } catch (error) {
+      const errorInfo = handleStorageError(error);
+      console.error(`Storage get error for key "${key}":`, errorInfo.error);
       return defaultValue;
     }
   },
   set: (key, value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
+      return { success: true };
     } catch (error) {
-      console.error('Storage error:', error);
+      const errorInfo = handleStorageError(error);
+      console.error(`Storage set error for key "${key}":`, errorInfo.error);
+      return errorInfo;
     }
   },
   remove: (key) => {
     try {
       localStorage.removeItem(key);
+      return { success: true };
     } catch (error) {
-      console.error('Storage error:', error);
+      const errorInfo = handleStorageError(error);
+      console.error(`Storage remove error for key "${key}":`, errorInfo.error);
+      return errorInfo;
     }
   },
   clear: () => {
     try {
       localStorage.clear();
+      return { success: true };
     } catch (error) {
-      console.error('Storage error:', error);
+      const errorInfo = handleStorageError(error);
+      console.error('Storage clear error:', errorInfo.error);
+      return errorInfo;
     }
   },
 };

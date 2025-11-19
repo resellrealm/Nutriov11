@@ -7,6 +7,12 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { createUserProfile, getUserProfile } from './userService';
+import {
+  ERROR_CODES,
+  mapAuthErrorCode,
+  getErrorMessage,
+  createErrorResponse
+} from '../utils/errorCodes';
 
 /**
  * Authentication Service
@@ -43,10 +49,8 @@ export const registerUser = async (email, password, fullName = '') => {
     };
   } catch (error) {
     console.error('Registration error:', error);
-    return {
-      success: false,
-      error: getAuthErrorMessage(error.code)
-    };
+    const errorCode = mapAuthErrorCode(error.code);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -77,10 +81,8 @@ export const loginUser = async (email, password) => {
     };
   } catch (error) {
     console.error('Login error:', error);
-    return {
-      success: false,
-      error: getAuthErrorMessage(error.code)
-    };
+    const errorCode = mapAuthErrorCode(error.code);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -91,10 +93,8 @@ export const logoutUser = async () => {
     return { success: true };
   } catch (error) {
     console.error('Logout error:', error);
-    return {
-      success: false,
-      error: 'Failed to logout'
-    };
+    const errorCode = mapAuthErrorCode(error.code);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -108,10 +108,8 @@ export const resetPassword = async (email) => {
     };
   } catch (error) {
     console.error('Password reset error:', error);
-    return {
-      success: false,
-      error: getAuthErrorMessage(error.code)
-    };
+    const errorCode = mapAuthErrorCode(error.code);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -120,41 +118,10 @@ export const getCurrentUser = () => {
   return auth.currentUser;
 };
 
-// Get auth error message
-const getAuthErrorMessage = (errorCode) => {
-  switch (errorCode) {
-    case 'auth/email-already-in-use':
-      return 'An account with this email already exists';
-    case 'auth/invalid-email':
-      return 'Invalid email address';
-    case 'auth/operation-not-allowed':
-      return 'Email/password accounts are not enabled';
-    case 'auth/weak-password':
-      return 'Password should be at least 6 characters';
-    case 'auth/user-disabled':
-      return 'This account has been disabled';
-    case 'auth/user-not-found':
-      return 'No account found with this email';
-    case 'auth/wrong-password':
-      return 'Incorrect password';
-    case 'auth/invalid-credential':
-      return 'Invalid email or password';
-    case 'auth/too-many-requests':
-      return 'Too many attempts. Please try again later';
-    case 'auth/configuration-not-found':
-      return 'Firebase is not configured. Please set up your .env file with valid Firebase credentials';
-    case 'auth/network-request-failed':
-      return 'Network error. Please check your connection';
-    default:
-      return 'An error occurred. Please try again';
-  }
-};
-
 export default {
   registerUser,
   loginUser,
   logoutUser,
   resetPassword,
-  getCurrentUser,
-  getAuthErrorMessage
+  getCurrentUser
 };

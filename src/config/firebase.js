@@ -17,8 +17,19 @@ const firebaseConfig = {
 // Validate required config
 const requiredKeys = ['apiKey', 'authDomain', 'projectId'];
 const missingKeys = requiredKeys.filter(key => !firebaseConfig[key]);
+
+// Track configuration status for error handling
+export const isFirebaseConfigured = missingKeys.length === 0;
+export const firebaseConfigError = missingKeys.length > 0
+  ? {
+      code: 'auth/configuration-not-found',
+      message: `Missing required Firebase config: ${missingKeys.join(', ')}. Please create a .env file based on .env.example with your Firebase credentials.`,
+      missingKeys
+    }
+  : null;
+
 if (missingKeys.length > 0) {
-  console.error(`Missing required Firebase config: ${missingKeys.join(', ')}.`);
+  console.error(`[Firebase Config Error] Missing required keys: ${missingKeys.join(', ')}`);
   console.error('Please create a .env file based on .env.example with your Firebase credentials.');
   console.error('Also ensure Email/Password authentication is enabled in Firebase Console.');
 }

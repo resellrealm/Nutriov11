@@ -6,6 +6,12 @@ import {
   updateDoc,
   serverTimestamp
 } from 'firebase/firestore';
+import {
+  ERROR_CODES,
+  getErrorMessage,
+  mapFirestoreErrorCode,
+  createErrorResponse
+} from '../utils/errorCodes';
 
 /**
  * User Service
@@ -133,7 +139,8 @@ export const createUserProfile = async (userId, email) => {
     return { success: true, data: userData };
   } catch (error) {
     console.error('Error creating user profile:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -146,11 +153,12 @@ export const getUserProfile = async (userId) => {
     if (userSnap.exists()) {
       return { success: true, data: userSnap.data() };
     } else {
-      return { success: false, error: 'User profile not found' };
+      return createErrorResponse(ERROR_CODES.DB_NOT_FOUND, 'User profile not found');
     }
   } catch (error) {
     console.error('Error getting user profile:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -165,7 +173,8 @@ export const updateUserProfile = async (userId, updates) => {
     return { success: true };
   } catch (error) {
     console.error('Error updating user profile:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -184,7 +193,8 @@ export const updateOnboardingProgress = async (userId, screenNumber, data) => {
     return { success: true };
   } catch (error) {
     console.error('Error updating onboarding progress:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -200,7 +210,8 @@ export const completeOnboarding = async (userId, calculatedMetrics) => {
     return { success: true };
   } catch (error) {
     console.error('Error completing onboarding:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
