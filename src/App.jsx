@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Provider, useSelector, useDispatch } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import { store } from './store/store';
 import { setCredentials, setOnboardingComplete } from './store/authSlice';
 
@@ -70,6 +70,10 @@ function AppContent() {
         dispatch(setCredentials({ user, token }));
       } catch (e) {
         console.error('Failed to parse user from localStorage:', e);
+        // Clear invalid data to prevent auth issues
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('onboardingComplete');
       }
     }
 

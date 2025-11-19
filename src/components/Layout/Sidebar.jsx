@@ -179,7 +179,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:left-0 bg-white/95 dark:bg-gray-900/95 border-r border-gray-200 dark:border-gray-800">
-        <div className="h-full flex flex-col safe-area-top pt-4">
+        <div className="h-full flex flex-col pt-4" style={{ paddingTop: 'calc(var(--header-height, 56px) + 16px)' }}>
           <div className="px-4 pb-2">
             <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
               Nutrio
