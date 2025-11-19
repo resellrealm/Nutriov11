@@ -304,25 +304,44 @@ const Account = () => {
               action={() => toast('Opening upgrade page...')}
             />
             <div className="pl-10 text-sm text-gray-600 dark:text-gray-400">
-              <p className="font-medium mb-1">Premium includes:</p>
-              <ul className="space-y-1">
+              <p className="font-medium mb-2">Premium includes:</p>
+              <ul className="space-y-1.5">
                 <li className="flex items-center space-x-2">
-                  <CheckCircle size={14} className="text-green-500" />
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
                   <span>Unlimited food scans</span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <CheckCircle size={14} className="text-green-500" />
-                  <span>Full meal planner access</span>
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
+                  <span>AI-powered meal planning</span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <CheckCircle size={14} className="text-green-500" />
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
+                  <span>Smart grocery list generation</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
+                  <span>Advanced nutrition analytics</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
                   <span>Complete history & data export</span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <CheckCircle size={14} className="text-green-500" />
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
+                  <span>Priority customer support</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
                   <span>All achievements unlocked</span>
                 </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
+                  <span>Ad-free experience</span>
+                </li>
               </ul>
+              <p className="mt-3 text-xs text-gray-500 dark:text-gray-500">
+                Basic plan: 5 scans/month, limited meal suggestions
+              </p>
             </div>
           </div>
         )}

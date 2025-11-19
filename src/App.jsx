@@ -77,8 +77,8 @@ function AppContent() {
       dispatch(setOnboardingComplete(true));
     }
 
-    // Safety timeout so we NEVER get stuck on loader - increased for better loading
-    const timeout = setTimeout(() => setIsLoading(false), 6000);
+    // Safety timeout so we NEVER get stuck on loader
+    const timeout = setTimeout(() => setIsLoading(false), 3000);
     return () => clearTimeout(timeout);
   }, [dispatch]);
 

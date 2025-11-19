@@ -43,7 +43,7 @@ const Layout = () => {
       <main
         className="px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8 lg:ml-64"
         style={{
-          paddingTop: 'calc(var(--header-height, 56px) + 12px)',
+          paddingTop: 'calc(var(--header-height, 56px) + 6px)',
           minHeight: 'calc(100vh - var(--header-height, 56px))'
         }}
       >
