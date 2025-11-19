@@ -38,7 +38,7 @@ const Step2Goals = () => {
           What's your weight goal?
         </label>
         <div className="grid grid-cols-3 gap-4">
-          {weightGoals.map(({ id, icon: Icon, label, color }) => (
+          {weightGoals.map(({ id, icon: _Icon, label, color }) => (
             <motion.button
               key={id}
               onClick={() => dispatch(setWeightGoal(id))}

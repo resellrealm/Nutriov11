@@ -129,7 +129,7 @@ const Dashboard = () => {
       last7Days.push(date.toISOString().split('T')[0]);
     }
 
-    const chartData = last7Days.map((dateStr, index) => {
+    const chartData = last7Days.map((dateStr) => {
       const dayData = weekly.dailyTotals?.[dateStr] || {};
       const dayName = days[new Date(dateStr).getDay() === 0 ? 6 : new Date(dateStr).getDay() - 1];
       return {
@@ -449,8 +449,8 @@ const Dashboard = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {macroData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {macroData.map((entry, _index) => (
+                      <Cell key={`cell-${entry.name}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -483,8 +483,8 @@ const Dashboard = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {mealTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={MEAL_COLORS[index % MEAL_COLORS.length]} />
+                    {mealTypeData.map((entry, idx) => (
+                      <Cell key={`cell-${entry.name}`} fill={MEAL_COLORS[idx % MEAL_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip />

@@ -15,7 +15,7 @@ import {
   Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getProductByBarcode, isValidBarcode, searchProducts } from '../services/openFoodFactsService';
+import { getProductByBarcode, isValidBarcode } from '../services/openFoodFactsService';
 import { logFoodItem } from '../services/foodLogService';
 
 /**
@@ -119,7 +119,7 @@ const BarcodeScanner = () => {
         setManualEntry(true);
         setManualBarcode(barcode);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch product information');
     } finally {
       setIsLoading(false);
@@ -178,7 +178,7 @@ const BarcodeScanner = () => {
       } else {
         toast.error(result.error || 'Failed to log food');
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred while logging food');
     } finally {
       setIsLoading(false);

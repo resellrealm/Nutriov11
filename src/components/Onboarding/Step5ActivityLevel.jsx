@@ -71,7 +71,7 @@ const Step5ActivityLevel = () => {
       
       {/* Activity Level Options */}
       <div className="space-y-3">
-        {activityLevels.map(({ id, icon: Icon, label, description, examples, multiplier, color, recommended }) => (
+        {activityLevels.map(({ id, icon: _Icon, label, description, examples, multiplier, color, recommended }) => (
           <motion.button
             key={id}
             onClick={() => dispatch(setActivityLevel(id))}

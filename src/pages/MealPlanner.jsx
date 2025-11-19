@@ -54,7 +54,7 @@ const MealPlanner = () => {
     }
   };
 
-  const analyzeFridgePhoto = (file) => {
+  const analyzeFridgePhoto = (_file) => {
     toast.success('Analyzing your ingredients...');
 
     // Simulate AI analysis with realistic delay

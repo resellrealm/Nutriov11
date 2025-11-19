@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { 
   Heart, 
   Book, 
@@ -38,7 +38,7 @@ const Favourites = () => {
   const [addMethod, setAddMethod] = useState('scan'); // scan, link, manual
 
   // Sample data (would come from backend)
-  const [favourites, setFavourites] = useState([
+  const [favourites, _setFavourites] = useState([
     {
       id: 1,
       name: 'Green Power Smoothie',

@@ -22,7 +22,7 @@ const MealAnalyzer = () => {
   const dispatch = useDispatch();
   const isPremium = useSelector(state => state.auth.isPremium);
   const dailyScansUsed = useSelector(state => state.auth.dailyScansUsed);
-  const lastScanDate = useSelector(state => state.auth.lastScanDate);
+  const _lastScanDate = useSelector(state => state.auth.lastScanDate);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);

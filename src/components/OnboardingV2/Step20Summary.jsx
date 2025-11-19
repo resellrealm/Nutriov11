@@ -13,7 +13,7 @@ const Step20Summary = () => {
     dispatch(setStep(stepNumber));
   };
 
-  const handleConfirm = () => {
+  const _handleConfirm = () => {
     dispatch(confirmSummary());
   };
 

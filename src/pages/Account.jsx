@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   User,
@@ -23,51 +23,59 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const Account = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: '',
-    username: '',
-    email: '',
-    age: '',
-    weight: '',
-    height: '',
-    targetWeight: '',
-    activityLevel: '',
-    diet: '',
-  });
+// Helper components defined outside of Account
+const SettingSection = ({ title, children }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-card p-6 mb-4">
+    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">{title}</h3>
+    {children}
+  </div>
+);
 
-  // Load user data from localStorage
-  useEffect(() => {
-    const darkModePreference = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(darkModePreference);
-    
-    setProfileData({
-      name: localStorage.getItem('userName') || '',
-      username: localStorage.getItem('userName') || '',
-      email: localStorage.getItem('userEmail') || '',
-      age: localStorage.getItem('userAge') || '',
-      weight: localStorage.getItem('userWeight') || '',
-      height: localStorage.getItem('userHeight') || '',
-      targetWeight: localStorage.getItem('targetWeight') || '',
-      activityLevel: localStorage.getItem('activityLevel') || '',
-      diet: localStorage.getItem('userDiet') || '',
-    });
-  }, []);
+const SettingItem = ({ icon: IconComponent, label, value, action, danger }) => (
+  <div className={`flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${danger ? 'hover:bg-red-50 dark:hover:bg-red-900/20' : ''}`}
+    onClick={action}
+  >
+    <div className="flex items-center space-x-3">
+      {IconComponent && <IconComponent className={`${danger ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`} size={20} />}
+      <span className={`font-medium ${danger ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>{label}</span>
+    </div>
+    <div className="flex items-center space-x-2">
+      {value && <span className="text-sm text-gray-500 dark:text-gray-400">{value}</span>}
+      <ChevronRight className="text-gray-400" size={18} />
+    </div>
+  </div>
+);
+
+const Account = () => {
+  // Initialize state with lazy initialization to avoid useEffect for initial load
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true';
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState(() => ({
+    name: localStorage.getItem('userName') || '',
+    username: localStorage.getItem('userName') || '',
+    email: localStorage.getItem('userEmail') || '',
+    age: localStorage.getItem('userAge') || '',
+    weight: localStorage.getItem('userWeight') || '',
+    height: localStorage.getItem('userHeight') || '',
+    targetWeight: localStorage.getItem('targetWeight') || '',
+    activityLevel: localStorage.getItem('activityLevel') || '',
+    diet: localStorage.getItem('userDiet') || '',
+  }));
 
   // Toggle dark mode
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
     localStorage.setItem('darkMode', newMode.toString());
-    
+
     if (newMode) {
       document.documentElement.classList.add('dark');
-      toast.success('Dark mode enabled 🌙');
+      toast.success('Dark mode enabled');
     } else {
       document.documentElement.classList.remove('dark');
-      toast.success('Light mode enabled ☀️');
+      toast.success('Light mode enabled');
     }
   };
 
@@ -81,7 +89,7 @@ const Account = () => {
     localStorage.setItem('targetWeight', profileData.targetWeight);
     localStorage.setItem('activityLevel', profileData.activityLevel);
     localStorage.setItem('userDiet', profileData.diet);
-    
+
     setIsEditing(false);
     toast.success('Profile updated successfully!');
   };
@@ -105,7 +113,7 @@ const Account = () => {
       subscription: subscriptionTier,
       exportDate: new Date().toISOString(),
     };
-    
+
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -116,28 +124,6 @@ const Account = () => {
 
     toast.success('Data exported successfully!');
   };
-
-  const SettingSection = ({ title, children }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-card p-6 mb-4">
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">{title}</h3>
-      {children}
-    </div>
-  );
-
-  const SettingItem = ({ icon: Icon, label, value, action, danger }) => (
-    <div className={`flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${danger ? 'hover:bg-red-50 dark:hover:bg-red-900/20' : ''}`}
-      onClick={action}
-    >
-      <div className="flex items-center space-x-3">
-        <Icon className={`${danger ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`} size={20} />
-        <span className={`font-medium ${danger ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>{label}</span>
-      </div>
-      <div className="flex items-center space-x-2">
-        {value && <span className="text-sm text-gray-500 dark:text-gray-400">{value}</span>}
-        <ChevronRight className="text-gray-400" size={18} />
-      </div>
-    </div>
-  );
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -168,7 +154,7 @@ const Account = () => {
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{profileData.name || 'User'}</h2>
             <p className="text-gray-600 dark:text-gray-400">@{profileData.username || 'username'}</p>
             <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">{profileData.email}</p>
-            
+
             <div className="flex items-center justify-center sm:justify-start space-x-4 mt-3">
               <div className="flex items-center space-x-1">
                 <Trophy className="text-yellow-500" size={16} />
@@ -275,8 +261,8 @@ const Account = () => {
             <div>
               <h4 className="font-semibold text-gray-800 dark:text-white capitalize">{subscriptionTier} Plan</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {subscriptionTier === 'premium' 
-                  ? 'Unlimited scans & all features' 
+                {subscriptionTier === 'premium'
+                  ? 'Unlimited scans & all features'
                   : `${scansThisMonth}/5 scans used this month`}
               </p>
             </div>
@@ -287,19 +273,19 @@ const Account = () => {
             )}
           </div>
         </div>
-        
+
         {subscriptionTier === 'premium' ? (
-          <SettingItem 
-            icon={CreditCard} 
-            label="Manage Subscription" 
+          <SettingItem
+            icon={CreditCard}
+            label="Manage Subscription"
             value="£7.99/month"
             action={() => toast('Opening subscription management...')}
           />
         ) : (
           <div className="space-y-2">
-            <SettingItem 
-              icon={CreditCard} 
-              label="Upgrade to Premium" 
+            <SettingItem
+              icon={CreditCard}
+              label="Upgrade to Premium"
               value="£7.99/month"
               action={() => toast('Opening upgrade page...')}
             />
@@ -371,15 +357,15 @@ const Account = () => {
 
       {/* Notifications */}
       <SettingSection title="Notifications">
-        <SettingItem 
-          icon={Bell} 
-          label="Push Notifications" 
+        <SettingItem
+          icon={Bell}
+          label="Push Notifications"
           value="Enabled"
           action={() => toast('Opening notification settings...')}
         />
-        <SettingItem 
-          icon={Mail} 
-          label="Email Notifications" 
+        <SettingItem
+          icon={Mail}
+          label="Email Notifications"
           value="Disabled"
           action={() => toast('Opening email settings...')}
         />
@@ -387,28 +373,28 @@ const Account = () => {
 
       {/* Privacy & Security */}
       <SettingSection title="Privacy & Security">
-        <SettingItem 
-          icon={Lock} 
-          label="Change Password" 
+        <SettingItem
+          icon={Lock}
+          label="Change Password"
           action={() => toast('Opening password change...')}
         />
-        <SettingItem 
-          icon={Shield} 
-          label="Privacy Settings" 
+        <SettingItem
+          icon={Shield}
+          label="Privacy Settings"
           action={() => toast('Opening privacy settings...')}
         />
       </SettingSection>
 
       {/* Data & Storage */}
       <SettingSection title="Data & Storage">
-        <SettingItem 
-          icon={Download} 
-          label="Export My Data" 
+        <SettingItem
+          icon={Download}
+          label="Export My Data"
           action={handleExportData}
         />
-        <SettingItem 
-          icon={Trash2} 
-          label="Delete Account" 
+        <SettingItem
+          icon={Trash2}
+          label="Delete Account"
           danger
           action={() => toast.error('Please contact support to delete your account')}
         />
@@ -418,7 +404,7 @@ const Account = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-card p-6 mt-4">
         <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
           <p>Nutrio v1.0.0</p>
-          <p className="mt-2">Made with 💚 by the Nutrio Team</p>
+          <p className="mt-2">Made with care by the Nutrio Team</p>
           <div className="flex items-center justify-center space-x-4 mt-4">
             <a href="#" className="hover:text-primary transition-colors">Terms</a>
             <span>•</span>

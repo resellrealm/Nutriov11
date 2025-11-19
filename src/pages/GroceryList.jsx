@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
@@ -24,24 +24,14 @@ const GroceryList = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
-  useEffect(() => {
-    if (userId) {
-      loadGroceryLists();
-      loadUserProfile();
-    } else {
-      // No user ID available, stop loading
-      setIsLoading(false);
-    }
-  }, [userId]);
-
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     const result = await getUserProfile(userId);
     if (result.success) {
       setUserProfile(result.data);
     }
-  };
+  }, [userId]);
 
-  const loadGroceryLists = async () => {
+  const loadGroceryLists = useCallback(async () => {
     setIsLoading(true);
     const result = await getUserGroceryLists(userId);
     if (result.success) {
@@ -51,7 +41,17 @@ const GroceryList = () => {
       }
     }
     setIsLoading(false);
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      loadGroceryLists();
+      loadUserProfile();
+    } else {
+      // No user ID available, stop loading
+      setIsLoading(false);
+    }
+  }, [userId, loadGroceryLists, loadUserProfile]);
 
   const handleGenerateList = async () => {
     if (!userProfile) {
@@ -69,7 +69,7 @@ const GroceryList = () => {
       } else {
         toast.error(result.error || 'Failed to generate grocery list');
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred while generating the list');
     } finally {
       setIsGenerating(false);
@@ -95,7 +95,7 @@ const GroceryList = () => {
     }
   };
 
-  const handlePurchaseItem = async (itemId) => {
+  const _handlePurchaseItem = async (itemId) => {
     if (!currentList) return;
 
     const previousList = { ...currentList, items: [...currentList.items] };

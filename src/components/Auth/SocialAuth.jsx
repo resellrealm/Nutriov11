@@ -11,7 +11,7 @@ const SocialAuth = ({ mode = 'signup' }) => {
         toast.dismiss();
         toast.error('Google sign-in coming soon!');
       }, 1000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to connect with Google');
     }
   };
@@ -24,7 +24,7 @@ const SocialAuth = ({ mode = 'signup' }) => {
         toast.dismiss();
         toast.error('Apple sign-in coming soon!');
       }, 1000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to connect with Apple');
     }
   };

@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 
 const History = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('list'); // list, calendar
+  const [_selectedDate, _setSelectedDate] = useState(new Date());
+  const [_viewMode, _setViewMode] = useState('list'); // list, calendar
   const [searchQuery, setSearchQuery] = useState('');
 
   const mealHistory = [

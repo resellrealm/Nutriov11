@@ -55,7 +55,7 @@ const Step1DiaryStyle = () => {
       
       {/* Options */}
       <div className="grid md:grid-cols-2 gap-6">
-        {styles.map(({ id, icon: Icon, title, description, features, color }) => (
+        {styles.map(({ id, icon: _Icon, title, description, features, color }) => (
           <motion.button
             key={id}
             onClick={() => handleSelect(id)}

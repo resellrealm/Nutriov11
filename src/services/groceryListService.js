@@ -275,7 +275,7 @@ export const applyBudgetConstraints = (items, budget, budgetPriority) => {
  * Generate grocery list from meal plan
  * This is the main algorithm
  */
-export const generateGroceryList = async (userId, userProfile, mealPlan = []) => {
+export const generateGroceryList = async (userId, userProfile, _mealPlan = []) => {
   try {
     // Extract user preferences
     const {
@@ -283,7 +283,7 @@ export const generateGroceryList = async (userId, userProfile, mealPlan = []) =>
       budget,
       dietary,
       shoppingPreferences,
-      cookingHabits
+      cookingHabits: _cookingHabits
     } = userProfile;
 
     // Step 1: Calculate household scaling factor

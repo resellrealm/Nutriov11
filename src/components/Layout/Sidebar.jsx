@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   Camera,
@@ -126,7 +126,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const renderNavList = (onItemClick) => (
     <nav className="flex-1 overflow-y-auto">
       <ul className="space-y-1 px-2 py-4">
-        {navItems.map(({ path, icon: Icon, label, color, premiumOnly }) => {
+        {navItems.map(({ path, icon: _Icon, label, color, premiumOnly }) => {
           const isLocked = premiumOnly && !isPremium;
 
           return (

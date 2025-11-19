@@ -278,7 +278,7 @@ export const calculateMacros = (tdee, goal) => {
 
 // Calculate all metrics at once
 export const calculateAllMetrics = (userProfile) => {
-  const { basicInfo, goals, exercise } = userProfile;
+  const { basicInfo, goals, exercise: _exercise } = userProfile;
 
   const bmi = calculateBMI(
     basicInfo.currentWeight.value,
