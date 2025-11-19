@@ -34,7 +34,15 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.hasCompletedOnboarding = false;
-      localStorage.clear();
+      state.isPremium = false;
+      state.dailyScansUsed = 0;
+      state.lastScanDate = null;
+      // Only remove auth-related keys, preserve user preferences
+      const authKeys = [
+        'token', 'user', 'onboardingComplete', 'isPremium',
+        'dailyScansUsed', 'lastScanDate', 'planTier', 'onboarding_progress'
+      ];
+      authKeys.forEach(key => localStorage.removeItem(key));
       sessionStorage.clear();
     },
     setOnboardingComplete: (state, action) => {

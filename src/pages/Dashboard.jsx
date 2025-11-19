@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
@@ -71,6 +71,9 @@ const Dashboard = () => {
   const [macroData, setMacroData] = useState([]);
   const [mealTypeData, setMealTypeData] = useState([]);
 
+
+  const fetchDashboardData = useCallback(async () => {
+
   useEffect(() => {
     if (userId) {
       fetchDashboardData();
@@ -81,6 +84,7 @@ const Dashboard = () => {
   }, [userId]);
 
   const fetchDashboardData = async () => {
+main
     setLoading(true);
     setError(null);
 
@@ -112,13 +116,18 @@ const Dashboard = () => {
       }
 
     } catch (err) {
-      console.error('Dashboard data fetch error:', err);
       setError(err.message);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchDashboardData();
+    }
+  }, [userId, fetchDashboardData]);
 
   const processWeeklyData = (weekly, profile) => {
     // Process weekly calories for chart

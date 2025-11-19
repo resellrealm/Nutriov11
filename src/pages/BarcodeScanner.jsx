@@ -100,8 +100,6 @@ const BarcodeScanner = () => {
   };
 
   const handleBarcodeScanned = async (barcode) => {
-    console.log('Barcode scanned:', barcode);
-
     if (!isValidBarcode(barcode)) {
       toast.error('Invalid barcode format');
       return;

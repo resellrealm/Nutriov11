@@ -76,7 +76,8 @@ const OnboardingFlowV2 = () => {
     if (userId && currentStep > 1) {
       saveProgressToFirebase();
     }
-  }, [currentStep]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, userId]);
 
   const saveProgressToFirebase = async () => {
     if (!userId) return;

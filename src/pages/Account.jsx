@@ -87,8 +87,8 @@ const Account = () => {
     toast.success('Profile updated successfully!');
   };
 
-  // Get subscription info
-  const subscriptionTier = localStorage.getItem('subscriptionTier') || 'free';
+  // Get subscription info - use 'planTier' for consistency with Sidebar
+  const subscriptionTier = localStorage.getItem('planTier') || 'free';
   const scansThisMonth = parseInt(localStorage.getItem('scansThisMonth') || '0');
   const userLevel = localStorage.getItem('userLevel') || '1';
   const userPoints = localStorage.getItem('userPoints') || '0';

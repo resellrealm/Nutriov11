@@ -277,8 +277,6 @@ export const applyBudgetConstraints = (items, budget, budgetPriority) => {
  */
 export const generateGroceryList = async (userId, userProfile, mealPlan = []) => {
   try {
-    console.log('Generating grocery list for user:', userId);
-
     // Extract user preferences
     const {
       household,
@@ -290,7 +288,6 @@ export const generateGroceryList = async (userId, userProfile, mealPlan = []) =>
 
     // Step 1: Calculate household scaling factor
     const scalingFactor = calculateHouseholdScaling(household);
-    console.log('Household scaling factor:', scalingFactor);
 
     // Step 2: Extract ingredients from meal plan
     let groceryItems = [];

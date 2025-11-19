@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { registerUser } from '../services/authService';
-import { setCredentials } from '../store/authSlice';
+import { setCredentials, setOnboardingComplete } from '../store/authSlice';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -54,6 +54,7 @@ const Register = () => {
           user: result.user,
           token: result.token
         }));
+        dispatch(setOnboardingComplete(false));
 
         toast.success('Account created successfully! Let\'s set up your profile.');
 

@@ -95,9 +95,12 @@ const Sidebar = ({ isOpen, onClose }) => {
   ];
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('authToken');
-    }
+    // Clear auth-related localStorage items
+    const authKeys = [
+      'token', 'user', 'onboardingComplete', 'isPremium',
+      'dailyScansUsed', 'lastScanDate', 'planTier', 'onboarding_progress'
+    ];
+    authKeys.forEach(key => localStorage.removeItem(key));
     toast.success('Logged out successfully');
     navigate('/login');
     onClose && onClose();

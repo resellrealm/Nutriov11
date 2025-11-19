@@ -40,10 +40,27 @@ const MealAnalyzer = () => {
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error('Image too large. Please select an image under 10MB.');
+        return;
+      }
+
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Invalid file type. Please select a JPG, PNG, WebP, or GIF image.');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result);
         setAnalysisResult(null);
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read image file.');
       };
       reader.readAsDataURL(file);
     }

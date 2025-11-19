@@ -29,16 +29,16 @@ import BarcodeScanner from './pages/BarcodeScanner';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
-// Protected Route Component
+// Protected Route Component - uses Redux state for consistency
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('token');
-  const hasCompletedOnboarding = localStorage.getItem('onboardingComplete');
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const hasCompletedOnboarding = useSelector(state => state.auth.hasCompletedOnboarding);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
-  if (!hasCompletedOnboarding || hasCompletedOnboarding === 'false') {
+  if (!hasCompletedOnboarding) {
     return <Navigate to="/onboarding" />;
   }
 
