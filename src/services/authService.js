@@ -141,6 +141,10 @@ const getAuthErrorMessage = (errorCode) => {
       return 'Invalid email or password';
     case 'auth/too-many-requests':
       return 'Too many attempts. Please try again later';
+    case 'auth/configuration-not-found':
+      return 'Firebase is not configured. Please set up your .env file with valid Firebase credentials';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection';
     default:
       return 'An error occurred. Please try again';
   }
