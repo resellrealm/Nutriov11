@@ -11,13 +11,14 @@ const LoadingScreen = ({ onLoadingComplete }) => {
           clearInterval(timer);
           setTimeout(() => {
             onLoadingComplete();
-          }, 300);
+          }, 500);
           return 100;
         }
-        const diff = Math.random() * 15;
+        // Slower progress for smoother loading experience
+        const diff = Math.random() * 8;
         return Math.min(oldProgress + diff, 100);
       });
-    }, 150);
+    }, 200);
 
     return () => {
       clearInterval(timer);

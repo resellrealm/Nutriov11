@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store/store';
+import { setCredentials, setOnboardingComplete } from './store/authSlice';
 
 // Layout
 import Layout from './components/Layout/Layout';
@@ -44,10 +45,13 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-function App() {
+// Inner app component that can use hooks
+function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    // Dark mode
     const darkMode = localStorage.getItem('darkMode') === 'true';
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -55,81 +59,106 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
 
-    // Safety timeout so we NEVER get stuck on loader
-    const timeout = setTimeout(() => setIsLoading(false), 5000);
+    // Rehydrate auth state from localStorage
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const onboardingComplete = localStorage.getItem('onboardingComplete') === 'true';
+
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        dispatch(setCredentials({ user, token }));
+      } catch (e) {
+        console.error('Failed to parse user from localStorage:', e);
+      }
+    }
+
+    if (onboardingComplete) {
+      dispatch(setOnboardingComplete(true));
+    }
+
+    // Safety timeout so we NEVER get stuck on loader - increased for better loading
+    const timeout = setTimeout(() => setIsLoading(false), 6000);
     return () => clearTimeout(timeout);
-  }, []);
+  }, [dispatch]);
 
   return (
-    <Provider store={store}>
-      <ErrorBoundary>
-        {isLoading ? (
-          <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
-        ) : (
-          <Router>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 3000,
-                  style: {
-                    background: '#1f2937',
-                    color: '#fff',
+    <ErrorBoundary>
+      {isLoading ? (
+        <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
+      ) : (
+        <Router>
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: '#1f2937',
+                  color: '#fff',
+                },
+                success: {
+                  iconTheme: {
+                    primary: '#7fc7a1',
+                    secondary: '#fff',
                   },
-                  success: {
-                    iconTheme: {
-                      primary: '#7fc7a1',
-                      secondary: '#fff',
-                    },
+                },
+                error: {
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
                   },
-                  error: {
-                    iconTheme: {
-                      primary: '#ef4444',
-                      secondary: '#fff',
-                    },
-                  },
-                }}
+                },
+              }}
+            />
+            <Routes>
+              {/* Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/onboarding" element={<OnboardingFlowV2 />} />
+
+              {/* Barcode Scanner - Full Screen (Outside Layout) */}
+              <Route
+                path="/barcode"
+                element={
+                  <ProtectedRoute>
+                    <BarcodeScanner />
+                  </ProtectedRoute>
+                }
               />
-              <Routes>
-                {/* Auth Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/onboarding" element={<OnboardingFlowV2 />} />
 
-                {/* Barcode Scanner - Full Screen (Outside Layout) */}
-                <Route
-                  path="/barcode"
-                  element={
-                    <ProtectedRoute>
-                      <BarcodeScanner />
-                    </ProtectedRoute>
-                  }
-                />
+              {/* Protected Routes */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="analyze" element={<MealAnalyzer />} />
+                <Route path="meal-planner" element={<MealPlanner />} />
+                <Route path="grocery-list" element={<GroceryList />} />
+                <Route path="goals" element={<Goals />} />
+                <Route path="favourites" element={<Favourites />} />
+                <Route path="achievements" element={<Achievements />} />
+                <Route path="history" element={<History />} />
+                <Route path="account" element={<Account />} />
+              </Route>
+            </Routes>
+          </div>
+        </Router>
+      )}
+    </ErrorBoundary>
+  );
+}
 
-                {/* Protected Routes */}
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path="analyze" element={<MealAnalyzer />} />
-                  <Route path="meal-planner" element={<MealPlanner />} />
-                  <Route path="grocery-list" element={<GroceryList />} />
-                  <Route path="goals" element={<Goals />} />
-                  <Route path="favourites" element={<Favourites />} />
-                  <Route path="achievements" element={<Achievements />} />
-                  <Route path="history" element={<History />} />
-                  <Route path="account" element={<Account />} />
-                </Route>
-              </Routes>
-            </div>
-          </Router>
-        )}
-      </ErrorBoundary>
+// Main App wrapper with Provider
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
     </Provider>
   );
 }

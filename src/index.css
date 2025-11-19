@@ -12,7 +12,7 @@
 
 html {
   /* Initialize CSS variables for dynamic header height and safe areas */
-  --header-height: 60px;
+  --header-height: 56px;
 }
 
 html, body, #root {
@@ -36,7 +36,7 @@ body {
 
 /* Safe area padding for iOS notch/status bar */
 .safe-area-top {
-  padding-top: calc(env(safe-area-inset-top) + 16px);
+  padding-top: env(safe-area-inset-top);
 }
 
 .safe-area-bottom {

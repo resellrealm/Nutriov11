@@ -46,6 +46,7 @@ const Register = () => {
       if (result.success) {
         // Store auth data
         localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('onboardingComplete', 'false');
 
         // Update Redux
