@@ -11,6 +11,11 @@ import {
   orderBy,
   serverTimestamp
 } from 'firebase/firestore';
+import {
+  ERROR_CODES,
+  mapFirestoreErrorCode,
+  createErrorResponse
+} from '../utils/errorCodes';
 
 /**
  * Grocery List Generator Service
@@ -425,10 +430,8 @@ export const generateGroceryList = async (userId, userProfile, _mealPlan = []) =
 
   } catch (error) {
     console.error('Error generating grocery list:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -452,7 +455,8 @@ export const getUserGroceryLists = async (userId) => {
     return { success: true, data: lists };
   } catch (error) {
     console.error('Error getting grocery lists:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -465,7 +469,7 @@ export const updateGroceryItem = async (listId, itemId, updates) => {
     const listDoc = await getDoc(listRef);
 
     if (!listDoc.exists()) {
-      throw new Error('Grocery list not found');
+      return createErrorResponse(ERROR_CODES.DB_NOT_FOUND, 'Grocery list not found');
     }
 
     const listData = listDoc.data();
@@ -478,7 +482,8 @@ export const updateGroceryItem = async (listId, itemId, updates) => {
     return { success: true };
   } catch (error) {
     console.error('Error updating grocery item:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 

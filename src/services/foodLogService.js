@@ -11,6 +11,10 @@ import {
   orderBy,
   serverTimestamp
 } from 'firebase/firestore';
+import {
+  mapFirestoreErrorCode,
+  createErrorResponse
+} from '../utils/errorCodes';
 
 /**
  * Food Log Service
@@ -64,10 +68,8 @@ export const logFoodItem = async (userId, foodData) => {
     };
   } catch (error) {
     console.error('Error logging food item:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -92,7 +94,8 @@ export const getFoodLogByDate = async (userId, date) => {
     return { success: true, data: entries };
   } catch (error) {
     console.error('Error getting food log:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -119,7 +122,8 @@ export const getFoodLogByDateRange = async (userId, startDate, endDate) => {
     return { success: true, data: entries };
   } catch (error) {
     console.error('Error getting food log by range:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -183,7 +187,8 @@ export const getDailyTotals = async (userId, date) => {
     };
   } catch (error) {
     console.error('Error calculating daily totals:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -201,7 +206,8 @@ export const updateFoodLogEntry = async (entryId, updates) => {
     return { success: true };
   } catch (error) {
     console.error('Error updating food log entry:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -214,7 +220,8 @@ export const deleteFoodLogEntry = async (entryId) => {
     return { success: true };
   } catch (error) {
     console.error('Error deleting food log entry:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 
@@ -275,7 +282,8 @@ export const getWeeklySummary = async (userId) => {
     };
   } catch (error) {
     console.error('Error getting weekly summary:', error);
-    return { success: false, error: error.message };
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
   }
 };
 

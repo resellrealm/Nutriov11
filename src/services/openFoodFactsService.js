@@ -1,4 +1,10 @@
 import axios from 'axios';
+import {
+  ERROR_CODES,
+  mapHttpStatusCode,
+  createErrorResponse,
+  handleApiError
+} from '../utils/errorCodes';
 
 /**
  * Open Food Facts API Service
@@ -50,18 +56,7 @@ export const getProductByBarcode = async (barcode) => {
     };
   } catch (error) {
     console.error('Error fetching product from Open Food Facts:', error);
-
-    if (error.response?.status === 404) {
-      return {
-        success: false,
-        error: 'Product not found'
-      };
-    }
-
-    return {
-      success: false,
-      error: 'Failed to fetch product information'
-    };
+    return handleApiError(error);
   }
 };
 
@@ -151,10 +146,7 @@ export const searchProducts = async (searchTerm, page = 1) => {
     };
   } catch (error) {
     console.error('Error searching products:', error);
-    return {
-      success: false,
-      error: 'Failed to search products'
-    };
+    return handleApiError(error);
   }
 };
 
@@ -183,10 +175,7 @@ export const getProductsByCategory = async (category) => {
     };
   } catch (error) {
     console.error('Error getting products by category:', error);
-    return {
-      success: false,
-      error: 'Failed to get products'
-    };
+    return handleApiError(error);
   }
 };
 

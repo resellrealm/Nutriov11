@@ -1,4 +1,9 @@
 import axios from 'axios';
+import {
+  ERROR_CODES,
+  handleApiError,
+  createErrorResponse
+} from './errorCodes';
 
 // API Configuration
 export const API_CONFIG = {
@@ -37,10 +42,7 @@ export const analyzeFoodImage = async (imageFile) => {
     };
   } catch (error) {
     console.error('Food analysis error:', error);
-    return {
-      success: false,
-      error: 'Failed to analyze food image',
-    };
+    return handleApiError(error);
   }
 };
 
@@ -67,10 +69,7 @@ export const searchFood = async (query) => {
     };
   } catch (error) {
     console.error('Food search error:', error);
-    return {
-      success: false,
-      error: 'Failed to search food',
-    };
+    return handleApiError(error);
   }
 };
 
@@ -94,10 +93,7 @@ export const getRecipeRecommendations = async (diet, intolerances = []) => {
     };
   } catch (error) {
     console.error('Recipe recommendations error:', error);
-    return {
-      success: false,
-      error: 'Failed to get recipe recommendations',
-    };
+    return handleApiError(error);
   }
 };
 
@@ -121,10 +117,7 @@ export const searchRecipesByIngredients = async (ingredients) => {
     };
   } catch (error) {
     console.error('Recipe search error:', error);
-    return {
-      success: false,
-      error: 'Failed to search recipes',
-    };
+    return handleApiError(error);
   }
 };
 
