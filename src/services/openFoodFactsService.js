@@ -1,7 +1,5 @@
 import axios from 'axios';
 import {
-  ERROR_CODES,
-  mapHttpStatusCode,
   createErrorResponse,
   handleApiError
 } from '../utils/errorCodes';
