@@ -92,15 +92,28 @@ export const loginUser = async (email, password) => {
   if (configError) return configError;
 
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    // Sign in with timeout
+    const userCredential = await withTimeout(
+      signInWithEmailAndPassword(auth, email, password),
+      15000,
+      'Login timed out. Please check your internet connection.'
+    );
     const user = userCredential.user;
 
-    // Get user profile from Firestore
-    let profileResult = await getUserProfile(user.uid);
+    // Get user profile from Firestore with timeout
+    let profileResult = await withTimeout(
+      getUserProfile(user.uid),
+      10000,
+      'Failed to load profile. Please try again.'
+    );
 
     // If profile doesn't exist (e.g., failed during registration), create it
     if (!profileResult.success && profileResult.errorCode === 'DB_NOT_FOUND') {
-      const createResult = await createUserProfile(user.uid, user.email);
+      const createResult = await withTimeout(
+        createUserProfile(user.uid, user.email),
+        10000,
+        'Failed to create profile. Please try again.'
+      );
       if (createResult.success) {
         profileResult = createResult;
       } else {
@@ -119,12 +132,16 @@ export const loginUser = async (email, password) => {
         email: user.email,
         displayName: user.displayName
       },
-      token: await user.getIdToken(),
+      token: await withTimeout(
+        user.getIdToken(),
+        5000,
+        'Failed to get authentication token.'
+      ),
       onboardingComplete: profile.onboarding?.completed || false
     };
   } catch (error) {
     const errorCode = mapAuthErrorCode(error.code);
-    return createErrorResponse(errorCode);
+    return createErrorResponse(errorCode, error.message);
   }
 };
 
