@@ -316,7 +316,7 @@ export const calculateAllMetrics = (userProfile) => {
   const heightUnit = basicInfo?.height?.unit || 'cm';
   const age = basicInfo?.age || 30;
   const gender = basicInfo?.gender || 'male';
-  const activityLevel = goals?.activityLevel || 'moderate';
+  const activityLevel = goals?.activityLevel || 'moderately_active';
   const primaryGoal = goals?.primary || 'maintain';
 
   const bmi = calculateBMI(weight, height, weightUnit, heightUnit);

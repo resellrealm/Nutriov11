@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Mail, Lock, User, Eye, EyeOff, AlertTriangle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,6 +11,19 @@ import { isFirebaseConfigured } from '../config/firebase';
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const hasCompletedOnboarding = useSelector(state => state.auth.hasCompletedOnboarding);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (hasCompletedOnboarding) {
+        navigate('/');
+      } else {
+        navigate('/onboarding');
+      }
+    }
+  }, [isAuthenticated, hasCompletedOnboarding, navigate]);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);

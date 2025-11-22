@@ -41,9 +41,17 @@ const OnboardingFlowV2 = () => {
   const stepValidation = useSelector(state => state.onboarding.stepValidation);
   const onboardingData = useSelector(state => state.onboarding);
   const userId = useSelector(state => state.auth.user?.id);
+  const hasCompletedOnboarding = useSelector(state => state.auth.hasCompletedOnboarding);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+
+  // Redirect to dashboard if onboarding is already complete
+  useEffect(() => {
+    if (hasCompletedOnboarding) {
+      navigate('/');
+    }
+  }, [hasCompletedOnboarding, navigate]);
 
   // Step components mapping
   const stepComponents = {
