@@ -1,4 +1,4 @@
-import { auth } from '../config/firebase';
+import { auth, isFirebaseConfigured, firebaseConfigError } from '../config/firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -18,8 +18,20 @@ import {
  * Handles all Firebase Authentication operations
  */
 
+// Helper to check Firebase configuration
+const checkFirebaseConfig = () => {
+  if (!isFirebaseConfigured || !auth) {
+    return createErrorResponse(ERROR_CODES.AUTH_CONFIG_NOT_FOUND,
+      firebaseConfigError?.message || 'Firebase is not configured. Please set up your .env file.');
+  }
+  return null;
+};
+
 // Register new user
 export const registerUser = async (email, password, fullName = '') => {
+  const configError = checkFirebaseConfig();
+  if (configError) return configError;
+
   try {
     // Create user in Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -55,6 +67,9 @@ export const registerUser = async (email, password, fullName = '') => {
 
 // Login existing user
 export const loginUser = async (email, password) => {
+  const configError = checkFirebaseConfig();
+  if (configError) return configError;
+
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -87,6 +102,9 @@ export const loginUser = async (email, password) => {
 
 // Logout user
 export const logoutUser = async () => {
+  const configError = checkFirebaseConfig();
+  if (configError) return configError;
+
   try {
     await signOut(auth);
     return { success: true };
@@ -99,6 +117,9 @@ export const logoutUser = async () => {
 
 // Send password reset email
 export const resetPassword = async (email) => {
+  const configError = checkFirebaseConfig();
+  if (configError) return configError;
+
   try {
     await sendPasswordResetEmail(auth, email);
     return {
@@ -114,6 +135,7 @@ export const resetPassword = async (email) => {
 
 // Get current user
 export const getCurrentUser = () => {
+  if (!isFirebaseConfigured || !auth) return null;
   return auth.currentUser;
 };
 
