@@ -89,7 +89,8 @@ function AppContent() {
     }
 
     // Safety timeout so we NEVER get stuck on loader
-    const timeout = setTimeout(() => setIsLoading(false), 3000);
+    // LoadingScreen takes 6 seconds (10% every 600ms) + 300ms delay = ~6.3s
+    const timeout = setTimeout(() => setIsLoading(false), 7000);
     return () => clearTimeout(timeout);
   }, [dispatch]);
 
