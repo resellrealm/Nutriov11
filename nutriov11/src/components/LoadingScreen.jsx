@@ -5,19 +5,23 @@ const LoadingScreen = ({ onLoadingComplete }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    const duration = 6000; // 6 seconds
+    const intervalMs = 50; // Update every 50ms for smooth animation
+    const increment = 100 / (duration / intervalMs);
+
     const timer = setInterval(() => {
       setProgress((oldProgress) => {
-        if (oldProgress === 100) {
+        const newProgress = oldProgress + increment;
+        if (newProgress >= 100) {
           clearInterval(timer);
           setTimeout(() => {
             onLoadingComplete();
-          }, 300);
+          }, 100);
           return 100;
         }
-        const diff = Math.random() * 15;
-        return Math.min(oldProgress + diff, 100);
+        return newProgress;
       });
-    }, 150);
+    }, intervalMs);
 
     return () => {
       clearInterval(timer);

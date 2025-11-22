@@ -3,10 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LoadingScreen from '../components/LoadingScreen';
 
 const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -55,11 +57,19 @@ const Register = () => {
       localStorage.setItem('userName', formData.name);
       localStorage.setItem('userEmail', formData.email);
       toast.success('Account created successfully!');
-      navigate('/onboarding');
+      setIsLoading(true);
     } catch {
       toast.error('Failed to create account. Please try again.');
     }
   };
+
+  const handleLoadingComplete = () => {
+    navigate('/onboarding');
+  };
+
+  if (isLoading) {
+    return <LoadingScreen onLoadingComplete={handleLoadingComplete} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20 flex items-center justify-center p-4">
