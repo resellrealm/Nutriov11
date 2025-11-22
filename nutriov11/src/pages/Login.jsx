@@ -34,8 +34,8 @@ const Login = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="text-white" size={32} />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <img src="/icons.png" alt="Nutrio" className="w-16 h-16 object-contain" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Nutrio

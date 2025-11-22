@@ -35,7 +35,7 @@ const LoadingScreen = ({ onLoadingComplete }) => {
         >
           {/* Logo */}
           <div className="w-32 h-32 mx-auto mb-6 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center shadow-2xl">
-            <div className="text-6xl">🍽️</div>
+            <img src="/icons.png" alt="Nutrio" className="w-24 h-24 object-contain" />
           </div>
           
           {/* App Name */}
