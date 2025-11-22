@@ -14,18 +14,51 @@ const Register = () => {
     confirmPassword: ''
   });
 
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validatePassword = (password) => {
+    return password.length >= 8;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Validate name
+    if (formData.name.trim().length < 2) {
+      toast.error('Name must be at least 2 characters');
+      return;
+    }
+
+    // Validate email
+    if (!validateEmail(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Validate password strength
+    if (!validatePassword(formData.password)) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+
+    // Check password match
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match!');
       return;
     }
+
     // Simulate registration
-    localStorage.setItem('token', 'demo-token');
-    localStorage.setItem('userName', formData.name);
-    localStorage.setItem('userEmail', formData.email);
-    toast.success('Account created successfully!');
-    navigate('/onboarding');
+    try {
+      localStorage.setItem('token', 'demo-token');
+      localStorage.setItem('userName', formData.name);
+      localStorage.setItem('userEmail', formData.email);
+      toast.success('Account created successfully!');
+      navigate('/onboarding');
+    } catch {
+      toast.error('Failed to create account. Please try again.');
+    }
   };
 
   return (

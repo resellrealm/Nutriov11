@@ -21,11 +21,10 @@ import toast from 'react-hot-toast';
 
 const Goals = () => {
   const [timeInterval, setTimeInterval] = useState('daily'); // daily, weekly, custom
-  const [_isEditMode, setIsEditMode] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
 
   // Current intake (would come from backend)
-  const [currentIntake, _setCurrentIntake] = useState({
+  const [currentIntake] = useState({
     calories: 1650,
     protein: 78,
     carbs: 180,
@@ -77,10 +76,9 @@ const Goals = () => {
   const micronutrients = ['vitaminA', 'vitaminC', 'vitaminD', 'calcium', 'iron'];
 
   const handleSaveGoals = () => {
-    toast.success('Goals updated successfully! 🎯');
-    setIsEditMode(false);
+    toast.success('Goals updated successfully!');
     setShowGoalModal(false);
-    
+
     // Check for achievements
     checkAchievements();
   };

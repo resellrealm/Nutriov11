@@ -20,7 +20,14 @@ const Step1DiaryStyle = () => {
         'Perfect for busy lifestyles',
         'Less data entry required'
       ],
-      color: 'emerald'
+      color: 'emerald',
+      classes: {
+        selected: 'border-emerald-500 bg-emerald-50 shadow-lg scale-105',
+        badge: 'bg-emerald-500',
+        icon: 'bg-emerald-100',
+        iconText: 'text-emerald-600',
+        bullet: 'bg-emerald-500'
+      }
     },
     {
       id: 'detailed',
@@ -33,7 +40,14 @@ const Step1DiaryStyle = () => {
         'Meal timing & portions',
         'Progress visualizations'
       ],
-      color: 'teal'
+      color: 'teal',
+      classes: {
+        selected: 'border-teal-500 bg-teal-50 shadow-lg scale-105',
+        badge: 'bg-teal-500',
+        icon: 'bg-teal-100',
+        iconText: 'text-teal-600',
+        bullet: 'bg-teal-500'
+      }
     }
   ];
   
@@ -55,7 +69,7 @@ const Step1DiaryStyle = () => {
       
       {/* Options */}
       <div className="grid md:grid-cols-2 gap-6">
-        {styles.map(({ id, icon: Icon, title, description, features, color }) => (
+        {styles.map(({ id, icon: Icon, title, description, features, classes }) => (
           <motion.button
             key={id}
             onClick={() => handleSelect(id)}
@@ -63,7 +77,7 @@ const Step1DiaryStyle = () => {
               relative p-6 rounded-xl border-2 text-left
               transition-all duration-200
               ${diaryStyle === id
-                ? `border-${color}-500 bg-${color}-50 shadow-lg scale-105`
+                ? classes.selected
                 : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
               }
             `}
@@ -77,17 +91,17 @@ const Step1DiaryStyle = () => {
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className={`absolute top-4 right-4 w-8 h-8 bg-${color}-500 text-white rounded-full flex items-center justify-center`}
+                className={`absolute top-4 right-4 w-8 h-8 ${classes.badge} text-white rounded-full flex items-center justify-center`}
               >
                 ✓
               </motion.div>
             )}
-            
+
             {/* Icon */}
-            <div className={`w-16 h-16 rounded-full bg-${color}-100 flex items-center justify-center mb-4`}>
-              <Icon className={`w-8 h-8 text-${color}-600`} />
+            <div className={`w-16 h-16 rounded-full ${classes.icon} flex items-center justify-center mb-4`}>
+              <Icon className={`w-8 h-8 ${classes.iconText}`} />
             </div>
-            
+
             {/* Content */}
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               {title}
@@ -95,12 +109,12 @@ const Step1DiaryStyle = () => {
             <p className="text-gray-600 mb-4">
               {description}
             </p>
-            
+
             {/* Features */}
             <ul className="space-y-2">
               {features.map((feature, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                  <span className={`w-1.5 h-1.5 rounded-full bg-${color}-500`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${classes.bullet}`} />
                   {feature}
                 </li>
               ))}

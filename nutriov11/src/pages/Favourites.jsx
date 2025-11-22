@@ -38,7 +38,7 @@ const Favourites = () => {
   const [addMethod, setAddMethod] = useState('scan'); // scan, link, manual
 
   // Sample data (would come from backend)
-  const [favourites, _setFavourites] = useState([
+  const [favourites] = useState([
     {
       id: 1,
       name: 'Green Power Smoothie',
