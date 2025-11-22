@@ -65,7 +65,7 @@ const Register = () => {
         }));
         dispatch(setOnboardingComplete(false));
 
-        toast.success('Account created successfully! Let\'s set up your profile.');
+        toast.success('Account created! Let\'s set up your profile.');
 
         // Navigate to onboarding
         navigate('/onboarding');
@@ -231,7 +231,7 @@ const Register = () => {
           <p className="text-center text-sm text-gray-600 mt-6">
             Already have an account?{' '}
             <Link to="/login" className="text-primary hover:text-primary/80 font-semibold">
-              Sign in
+              Sign In
             </Link>
           </p>
         </div>

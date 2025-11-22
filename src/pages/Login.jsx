@@ -177,7 +177,7 @@ const Login = () => {
           {/* Social Login */}
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => toast.error('Google sign-in coming soon!')}
+              onClick={() => toast('Google sign-in coming soon')}
               className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -189,7 +189,7 @@ const Login = () => {
               <span className="ml-2 text-sm font-medium text-gray-700">Google</span>
             </button>
             <button
-              onClick={() => toast.error('GitHub sign-in coming soon!')}
+              onClick={() => toast('GitHub sign-in coming soon')}
               className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -203,7 +203,7 @@ const Login = () => {
           <p className="text-center text-sm text-gray-600 mt-6">
             Don't have an account?{' '}
             <Link to="/register" className="text-primary hover:text-primary/80 font-semibold">
-              Sign up
+              Sign Up
             </Link>
           </p>
         </div>

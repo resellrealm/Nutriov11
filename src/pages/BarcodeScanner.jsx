@@ -366,7 +366,7 @@ const BarcodeScanner = () => {
                     <span className="font-semibold ml-2">{product.nutrition.carbs}g</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Fat:</span>
+                    <span className="text-gray-600">Fats:</span>
                     <span className="font-semibold ml-2">{product.nutrition.fat}g</span>
                   </div>
                 </div>

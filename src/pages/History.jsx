@@ -98,7 +98,7 @@ const History = () => {
           <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <ChevronLeft size={20} />
           </button>
-          <h3 className="font-semibold text-gray-800">October 2025</h3>
+          <h3 className="font-semibold text-gray-800">{new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}</h3>
           <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <ChevronRight size={20} />
           </button>

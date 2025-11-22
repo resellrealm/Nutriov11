@@ -29,7 +29,7 @@ const MealAnalyzer = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [scanMode, setScanMode] = useState('meal'); // 'meal' or 'barcode'
 
-  const MAX_DAILY_SCANS = 2;
+  const MAX_DAILY_SCANS = 5;
 
   useEffect(() => {
     // Reset scans if it's a new day

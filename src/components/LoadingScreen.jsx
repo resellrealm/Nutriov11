@@ -63,10 +63,10 @@ const LoadingScreen = ({ onLoadingComplete }) => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            {progress < 30 ? 'Preparing your nutrition tracker...' :
-             progress < 60 ? 'Loading your data...' :
-             progress < 90 ? 'Almost ready...' :
-             'Welcome back!'}
+            {progress < 30 ? 'Initializing...' :
+             progress < 60 ? 'Loading your profile...' :
+             progress < 90 ? 'Finalizing...' :
+             'Ready!'}
           </motion.p>
         </div>
 
