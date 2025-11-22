@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Provider, useSelector, useDispatch } from 'react-redux';
@@ -61,6 +61,10 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
 
+  const handleLoadingComplete = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => {
     // Dark mode
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -97,7 +101,7 @@ function AppContent() {
   return (
     <ErrorBoundary>
       {isLoading ? (
-        <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
+        <LoadingScreen onLoadingComplete={handleLoadingComplete} />
       ) : (
         <Router>
           <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
