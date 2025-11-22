@@ -89,7 +89,7 @@ function AppContent() {
     }
 
     // Safety timeout so we NEVER get stuck on loader
-    const timeout = setTimeout(() => setIsLoading(false), 9000);
+    const timeout = setTimeout(() => setIsLoading(false), 3000);
     return () => clearTimeout(timeout);
   }, [dispatch]);
 
