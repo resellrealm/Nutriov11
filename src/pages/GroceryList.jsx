@@ -136,7 +136,7 @@ const GroceryList = () => {
   };
 
   const calculateProgress = () => {
-    if (!currentList) return 0;
+    if (!currentList || !currentList.items || currentList.items.length === 0) return 0;
     const checked = currentList.items.filter(item => item.checked).length;
     return (checked / currentList.items.length) * 100;
   };

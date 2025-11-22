@@ -165,6 +165,9 @@ function AppContent() {
                 <Route path="history" element={<History />} />
                 <Route path="account" element={<Account />} />
               </Route>
+
+              {/* 404 Catch-all Route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </Router>

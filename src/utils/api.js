@@ -32,6 +32,7 @@ export const analyzeFoodImage = async (imageFile) => {
           'x-app-key': API_CONFIG.NUTRITIONIX.APP_KEY,
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 15000,
       }
     );
     
@@ -59,6 +60,7 @@ export const searchFood = async (query) => {
           'x-app-key': API_CONFIG.NUTRITIONIX.APP_KEY,
           'Content-Type': 'application/json',
         },
+        timeout: 10000,
       }
     );
     
@@ -83,7 +85,8 @@ export const getRecipeRecommendations = async (diet, intolerances = []) => {
     });
     
     const response = await axios.get(
-      `${API_CONFIG.SPOONACULAR.BASE_URL}/recipes/complexSearch?${params}`
+      `${API_CONFIG.SPOONACULAR.BASE_URL}/recipes/complexSearch?${params}`,
+      { timeout: 10000 }
     );
     
     return {
@@ -107,7 +110,8 @@ export const searchRecipesByIngredients = async (ingredients) => {
     });
     
     const response = await axios.get(
-      `${API_CONFIG.SPOONACULAR.BASE_URL}/recipes/findByIngredients?${params}`
+      `${API_CONFIG.SPOONACULAR.BASE_URL}/recipes/findByIngredients?${params}`,
+      { timeout: 10000 }
     );
     
     return {
