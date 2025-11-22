@@ -38,12 +38,12 @@ const Favourites = () => {
   const [addMethod, setAddMethod] = useState('scan'); // scan, link, manual
 
   // Sample data (would come from backend)
-  const [favourites, _setFavourites] = useState([
+  const [favourites] = useState([
     {
       id: 1,
       name: 'Green Power Smoothie',
       description: 'Protein-packed breakfast smoothie with spinach and banana',
-      image: '/api/placeholder/300/200',
+      image: null,
       category: 'breakfast',
       calories: 320,
       protein: 25,
@@ -59,7 +59,7 @@ const Favourites = () => {
       id: 2,
       name: 'Thai Chicken Curry',
       description: 'Authentic Thai green curry from Jamie Oliver cookbook',
-      image: '/api/placeholder/300/200',
+      image: null,
       category: 'dinner',
       calories: 450,
       protein: 35,
@@ -77,7 +77,7 @@ const Favourites = () => {
       id: 3,
       name: 'Quinoa Buddha Bowl',
       description: 'Colorful veggie bowl with tahini dressing',
-      image: '/api/placeholder/300/200',
+      image: null,
       category: 'lunch',
       calories: 380,
       protein: 18,
@@ -94,7 +94,7 @@ const Favourites = () => {
       id: 4,
       name: 'Overnight Oats',
       description: 'Easy breakfast prep with berries and almond butter',
-      image: '/api/placeholder/300/200',
+      image: null,
       category: 'breakfast',
       calories: 280,
       protein: 12,
@@ -110,7 +110,7 @@ const Favourites = () => {
       id: 5,
       name: 'Mediterranean Salmon',
       description: 'Pan-seared salmon with olives and tomatoes',
-      image: '/api/placeholder/300/200',
+      image: null,
       category: 'dinner',
       calories: 420,
       protein: 38,

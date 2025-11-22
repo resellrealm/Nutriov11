@@ -57,6 +57,8 @@ const authSlice = createSlice({
     setPremiumStatus: (state, action) => {
       state.isPremium = action.payload;
       localStorage.setItem('isPremium', action.payload.toString());
+      // Sync with planTier for consistency across components
+      localStorage.setItem('planTier', action.payload ? 'premium' : 'free');
     },
     incrementDailyScans: (state) => {
       const today = new Date().toDateString();

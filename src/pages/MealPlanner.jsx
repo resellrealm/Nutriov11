@@ -94,7 +94,7 @@ const MealPlanner = () => {
             protein: 18,
             ingredients: ['Bread', 'Avocado', 'Eggs', 'Tomatoes'],
             matchScore: 95,
-            image: '/api/placeholder/300/200'
+            image: null
           },
           {
             id: 2,
@@ -106,7 +106,7 @@ const MealPlanner = () => {
             protein: 22,
             ingredients: ['Eggs', 'Bell peppers', 'Tomatoes', 'Feta cheese'],
             matchScore: 92,
-            image: '/api/placeholder/300/200'
+            image: null
           }
         ],
         lunch: [
@@ -120,7 +120,7 @@ const MealPlanner = () => {
             protein: 15,
             ingredients: ['Quinoa', 'Broccoli', 'Sweet potato', 'Chickpeas'],
             matchScore: 88,
-            image: '/api/placeholder/300/200'
+            image: null
           },
           {
             id: 4,
@@ -132,7 +132,7 @@ const MealPlanner = () => {
             protein: 14,
             ingredients: ['Bread', 'Hummus', 'Bell peppers', 'Feta cheese'],
             matchScore: 85,
-            image: '/api/placeholder/300/200'
+            image: null
           }
         ],
         dinner: [
@@ -146,7 +146,7 @@ const MealPlanner = () => {
             protein: 16,
             ingredients: ['Quinoa', 'Sweet potato', 'Broccoli', 'Chickpeas', 'Olive oil'],
             matchScore: 90,
-            image: '/api/placeholder/300/200'
+            image: null
           },
           {
             id: 6,
@@ -158,7 +158,7 @@ const MealPlanner = () => {
             protein: 17,
             ingredients: ['Bell peppers', 'Quinoa', 'Chickpeas', 'Feta cheese', 'Tomatoes'],
             matchScore: 87,
-            image: '/api/placeholder/300/200'
+            image: null
           }
         ],
         snack: [
@@ -172,7 +172,7 @@ const MealPlanner = () => {
             protein: 6,
             ingredients: ['Hummus', 'Bell peppers', 'Broccoli'],
             matchScore: 95,
-            image: '/api/placeholder/300/200'
+            image: null
           },
           {
             id: 8,
@@ -184,7 +184,7 @@ const MealPlanner = () => {
             protein: 5,
             ingredients: ['Bread', 'Avocado', 'Tomatoes'],
             matchScore: 88,
-            image: '/api/placeholder/300/200'
+            image: null
           }
         ]
       };
