@@ -27,23 +27,45 @@ const checkFirebaseConfig = () => {
   return null;
 };
 
+// Helper to add timeout to promises
+const withTimeout = (promise, ms, errorMessage) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(errorMessage)), ms)
+    )
+  ]);
+};
+
 // Register new user
 export const registerUser = async (email, password, fullName = '') => {
   const configError = checkFirebaseConfig();
   if (configError) return configError;
 
   try {
-    // Create user in Firebase Auth
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // Create user in Firebase Auth with timeout
+    const userCredential = await withTimeout(
+      createUserWithEmailAndPassword(auth, email, password),
+      15000,
+      'Registration timed out. Please check your internet connection.'
+    );
     const user = userCredential.user;
 
     // Update display name if provided
     if (fullName) {
-      await updateProfile(user, { displayName: fullName });
+      await withTimeout(
+        updateProfile(user, { displayName: fullName }),
+        5000,
+        'Profile update timed out'
+      );
     }
 
-    // Create user profile in Firestore
-    const profileResult = await createUserProfile(user.uid, email);
+    // Create user profile in Firestore with timeout
+    const profileResult = await withTimeout(
+      createUserProfile(user.uid, email),
+      10000,
+      'Database connection timed out. Please try again.'
+    );
 
     if (!profileResult.success) {
       throw new Error(profileResult.error);
@@ -61,7 +83,7 @@ export const registerUser = async (email, password, fullName = '') => {
   } catch (error) {
     console.error('Registration error:', error);
     const errorCode = mapAuthErrorCode(error.code);
-    return createErrorResponse(errorCode);
+    return createErrorResponse(errorCode, error.message);
   }
 };
 
