@@ -12,7 +12,7 @@ const loadOnboardingState = () => {
       return undefined;
     }
     return JSON.parse(serializedState);
-  } catch (err) {
+  } catch {
     return undefined;
   }
 };
@@ -41,7 +41,7 @@ store.subscribe(() => {
     try {
       const state = store.getState().onboarding;
       localStorage.setItem('onboarding_progress', JSON.stringify(state));
-    } catch (err) {
+    } catch {
       // Silent fail for localStorage errors
     }
   }, 1000);
