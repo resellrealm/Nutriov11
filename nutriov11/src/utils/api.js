@@ -1,16 +1,45 @@
 import axios from 'axios';
 
-// API Configuration
+// Constants
+const FREE_SCAN_LIMIT = 5;
+const API_TIMEOUT = 30000;
+const MAX_RETRIES = 2;
+
+// API Configuration - Use environment variables
 export const API_CONFIG = {
   NUTRITIONIX: {
-    APP_ID: 'YOUR_NUTRITIONIX_APP_ID', // Replace with your Nutritionix App ID
-    APP_KEY: 'YOUR_NUTRITIONIX_APP_KEY', // Replace with your Nutritionix App Key
+    APP_ID: import.meta.env.VITE_NUTRITIONIX_APP_ID || '',
+    APP_KEY: import.meta.env.VITE_NUTRITIONIX_APP_KEY || '',
     BASE_URL: 'https://trackapi.nutritionix.com/v2',
   },
   SPOONACULAR: {
-    API_KEY: 'YOUR_SPOONACULAR_API_KEY', // Replace with your Spoonacular API Key
+    API_KEY: import.meta.env.VITE_SPOONACULAR_API_KEY || '',
     BASE_URL: 'https://api.spoonacular.com',
   },
+};
+
+// Safe localStorage helper
+const safeLocalStorage = {
+  getItem: (key, defaultValue = null) => {
+    try {
+      if (typeof window === 'undefined') return defaultValue;
+      return localStorage.getItem(key) ?? defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  },
+  setItem: (key, value) => {
+    try {
+      if (typeof window === 'undefined') return;
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage quota exceeded or private browsing
+    }
+  },
+  getNumber: (key, defaultValue = 0) => {
+    const value = parseInt(safeLocalStorage.getItem(key, String(defaultValue)), 10);
+    return isNaN(value) ? defaultValue : value;
+  }
 };
 
 // Nutritionix API - Image food recognition
@@ -36,10 +65,10 @@ export const analyzeFoodImage = async (imageFile) => {
       data: response.data.foods[0], // Returns nutrition data
     };
   } catch (error) {
-    console.error('Food analysis error:', error);
     return {
       success: false,
-      error: 'Failed to analyze food image',
+      error: error.response?.data?.message || 'Failed to analyze food image',
+      statusCode: error.response?.status,
     };
   }
 };
@@ -66,10 +95,10 @@ export const searchFood = async (query) => {
       data: response.data.foods,
     };
   } catch (error) {
-    console.error('Food search error:', error);
     return {
       success: false,
-      error: 'Failed to search food',
+      error: error.response?.data?.message || 'Failed to search food',
+      statusCode: error.response?.status,
     };
   }
 };
@@ -93,10 +122,10 @@ export const getRecipeRecommendations = async (diet, intolerances = []) => {
       data: response.data.results,
     };
   } catch (error) {
-    console.error('Recipe recommendations error:', error);
     return {
       success: false,
-      error: 'Failed to get recipe recommendations',
+      error: error.response?.data?.message || 'Failed to get recipe recommendations',
+      statusCode: error.response?.status,
     };
   }
 };
@@ -120,10 +149,10 @@ export const searchRecipesByIngredients = async (ingredients) => {
       data: response.data,
     };
   } catch (error) {
-    console.error('Recipe search error:', error);
     return {
       success: false,
-      error: 'Failed to search recipes',
+      error: error.response?.data?.message || 'Failed to search recipes',
+      statusCode: error.response?.status,
     };
   }
 };
@@ -155,17 +184,16 @@ export const getMockFoodData = (foodName) => {
 
 // Helper to check if user has premium subscription
 export const hasPremiumAccess = () => {
-  const subscription = localStorage.getItem('subscriptionTier');
+  const subscription = safeLocalStorage.getItem('subscriptionTier');
   return subscription === 'premium';
 };
 
 // Helper to check scan limit
 export const canUserScan = () => {
   if (hasPremiumAccess()) return { allowed: true };
-  
-  const scansThisMonth = parseInt(localStorage.getItem('scansThisMonth') || '0');
-  const FREE_SCAN_LIMIT = 5;
-  
+
+  const scansThisMonth = safeLocalStorage.getNumber('scansThisMonth', 0);
+
   return {
     allowed: scansThisMonth < FREE_SCAN_LIMIT,
     remaining: Math.max(0, FREE_SCAN_LIMIT - scansThisMonth),
@@ -175,22 +203,22 @@ export const canUserScan = () => {
 
 // Increment scan count
 export const incrementScanCount = () => {
-  const scansThisMonth = parseInt(localStorage.getItem('scansThisMonth') || '0');
-  localStorage.setItem('scansThisMonth', (scansThisMonth + 1).toString());
-  
+  const scansThisMonth = safeLocalStorage.getNumber('scansThisMonth', 0);
+  safeLocalStorage.setItem('scansThisMonth', (scansThisMonth + 1).toString());
+
   // Set month to reset counter
   const currentMonth = new Date().getMonth();
-  localStorage.setItem('scanCountMonth', currentMonth.toString());
+  safeLocalStorage.setItem('scanCountMonth', currentMonth.toString());
 };
 
 // Reset scan count if new month
 export const checkAndResetScanCount = () => {
   const currentMonth = new Date().getMonth();
-  const savedMonth = parseInt(localStorage.getItem('scanCountMonth') || currentMonth.toString());
-  
+  const savedMonth = safeLocalStorage.getNumber('scanCountMonth', currentMonth);
+
   if (currentMonth !== savedMonth) {
-    localStorage.setItem('scansThisMonth', '0');
-    localStorage.setItem('scanCountMonth', currentMonth.toString());
+    safeLocalStorage.setItem('scansThisMonth', '0');
+    safeLocalStorage.setItem('scanCountMonth', currentMonth.toString());
   }
 };
 

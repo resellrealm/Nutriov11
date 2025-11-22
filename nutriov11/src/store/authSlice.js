@@ -31,8 +31,12 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.hasCompletedOnboarding = false;
-      localStorage.clear();
-      sessionStorage.clear();
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        // Storage unavailable
+      }
     },
     setOnboardingComplete: (state, action) => {
       state.hasCompletedOnboarding = action.payload;

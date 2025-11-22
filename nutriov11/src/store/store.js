@@ -10,8 +10,7 @@ const loadOnboardingState = () => {
       return undefined;
     }
     return JSON.parse(serializedState);
-  } catch (err) {
-    console.error('Failed to load onboarding state:', err);
+  } catch {
     return undefined;
   }
 };
@@ -35,8 +34,8 @@ store.subscribe(() => {
   try {
     const state = store.getState().onboarding;
     localStorage.setItem('onboarding_progress', JSON.stringify(state));
-  } catch (err) {
-    console.error('Failed to save onboarding state:', err);
+  } catch {
+    // Storage unavailable
   }
 });
 
