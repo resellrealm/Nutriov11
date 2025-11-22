@@ -137,6 +137,7 @@ export const mapAuthErrorCode = (firebaseErrorCode) => {
     'auth/invalid-credential': ERROR_CODES.AUTH_INVALID_CREDENTIAL,
     'auth/too-many-requests': ERROR_CODES.AUTH_TOO_MANY_REQUESTS,
     'auth/configuration-not-found': ERROR_CODES.AUTH_CONFIG_NOT_FOUND,
+    'auth/invalid-api-key': ERROR_CODES.AUTH_CONFIG_NOT_FOUND,
     'auth/network-request-failed': ERROR_CODES.AUTH_NETWORK_FAILED,
     'auth/requires-recent-login': ERROR_CODES.AUTH_REQUIRES_RECENT_LOGIN,
   };

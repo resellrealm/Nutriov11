@@ -34,12 +34,22 @@ if (missingKeys.length > 0) {
   console.error('Also ensure Email/Password authentication is enabled in Firebase Console.');
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase only if properly configured
+let app = null;
+let auth = null;
+let db = null;
+let storage = null;
 
-// Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+if (isFirebaseConfigured) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+  } catch (error) {
+    console.error('[Firebase Init Error]', error);
+  }
+}
 
+export { auth, db, storage };
 export default app;
