@@ -1,4 +1,4 @@
-import { db } from '../config/firebase';
+import { db, isFirebaseFullyInitialized } from '../config/firebase';
 import {
   collection,
   doc,
@@ -10,6 +10,19 @@ import {
   orderBy,
   serverTimestamp
 } from 'firebase/firestore';
+import {
+  ERROR_CODES,
+  createErrorResponse
+} from '../utils/errorCodes';
+
+// Helper to check if Firestore is available
+const checkFirestoreConfig = () => {
+  if (!isFirebaseFullyInitialized || !db) {
+    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
+      'Database is not configured. Please check your Firebase setup.');
+  }
+  return null;
+};
 
 // 60+ built-in recipes for 2 months of daily recommendations
 export const BUILT_IN_RECIPES = [
@@ -1150,6 +1163,9 @@ export const searchRecipes = (query) => {
  * Save a user's custom recipe to Firestore
  */
 export const saveUserRecipe = async (userId, recipeData) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const userRecipesRef = collection(db, 'users', userId, 'recipes');
 
@@ -1180,6 +1196,9 @@ export const saveUserRecipe = async (userId, recipeData) => {
  * Get all user's custom recipes from Firestore
  */
 export const getUserRecipes = async (userId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const userRecipesRef = collection(db, 'users', userId, 'recipes');
     const q = query(userRecipesRef, orderBy('createdAt', 'desc'));
@@ -1211,6 +1230,9 @@ export const getUserRecipes = async (userId) => {
  * Update a user's custom recipe
  */
 export const updateUserRecipe = async (userId, recipeId, updates) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const recipeRef = doc(db, 'users', userId, 'recipes', recipeId);
 
@@ -1235,6 +1257,9 @@ export const updateUserRecipe = async (userId, recipeId, updates) => {
  * Delete a user's custom recipe
  */
 export const deleteUserRecipe = async (userId, recipeId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const recipeRef = doc(db, 'users', userId, 'recipes', recipeId);
     await deleteDoc(recipeRef);

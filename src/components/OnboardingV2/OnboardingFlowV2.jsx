@@ -108,10 +108,15 @@ const OnboardingFlowV2 = () => {
         notifications: onboardingData.notifications
       };
 
-      await updateOnboardingProgress(userId, currentStep, dataToSave);
-      dispatch(saveProgress());
+      const result = await updateOnboardingProgress(userId, currentStep, dataToSave);
+      if (result.success) {
+        dispatch(saveProgress());
+      } else {
+        console.error('Failed to save progress:', result.error);
+        // Don't show error toast for background saves to avoid annoying user
+      }
     } catch (error) {
-      toast.error('Failed to save progress');
+      console.error('Failed to save progress:', error);
     } finally {
       setIsSaving(false);
     }

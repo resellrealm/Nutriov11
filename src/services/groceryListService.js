@@ -1,4 +1,4 @@
-import { db } from '../config/firebase';
+import { db, isFirebaseFullyInitialized } from '../config/firebase';
 import {
   collection,
   doc,
@@ -16,6 +16,15 @@ import {
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
+
+// Helper to check if Firestore is available
+const checkFirestoreConfig = () => {
+  if (!isFirebaseFullyInitialized || !db) {
+    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
+      'Database is not configured. Please check your Firebase setup.');
+  }
+  return null;
+};
 
 /**
  * Grocery List Generator Service
@@ -281,6 +290,9 @@ export const applyBudgetConstraints = (items, budget, budgetPriority) => {
  * This is the main algorithm
  */
 export const generateGroceryList = async (userId, userProfile, _mealPlan = []) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     // Extract user preferences
     const {
@@ -439,6 +451,9 @@ export const generateGroceryList = async (userId, userProfile, _mealPlan = []) =
  * Get user's grocery lists
  */
 export const getUserGroceryLists = async (userId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const q = query(
       collection(db, 'groceryLists'),
@@ -464,6 +479,9 @@ export const getUserGroceryLists = async (userId) => {
  * Update grocery list item (check/uncheck, mark purchased)
  */
 export const updateGroceryItem = async (listId, itemId, updates) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const listRef = doc(db, 'groceryLists', listId);
     const listDoc = await getDoc(listRef);

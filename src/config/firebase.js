@@ -28,6 +28,9 @@ export const firebaseConfigError = missingKeys.length > 0
     }
   : null;
 
+// Track if all Firebase services initialized successfully
+export let isFirebaseFullyInitialized = false;
+
 if (missingKeys.length > 0) {
   console.error(`[Firebase Config Error] Missing required keys: ${missingKeys.join(', ')}`);
   console.error('Please create a .env file based on .env.example with your Firebase credentials.');
@@ -46,6 +49,10 @@ if (isFirebaseConfigured) {
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
+    // Only set to true if all services initialized
+    if (app && auth && db && storage) {
+      isFirebaseFullyInitialized = true;
+    }
   } catch (error) {
     console.error('[Firebase Init Error]', error);
   }

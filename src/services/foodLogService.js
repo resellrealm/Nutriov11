@@ -1,4 +1,4 @@
-import { db } from '../config/firebase';
+import { db, isFirebaseFullyInitialized } from '../config/firebase';
 import {
   collection,
   doc,
@@ -12,9 +12,19 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import {
+  ERROR_CODES,
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
+
+// Helper to check if Firestore is available
+const checkFirestoreConfig = () => {
+  if (!isFirebaseFullyInitialized || !db) {
+    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
+      'Database is not configured. Please check your Firebase setup.');
+  }
+  return null;
+};
 
 /**
  * Food Log Service
@@ -25,6 +35,9 @@ import {
  * Log a food item
  */
 export const logFoodItem = async (userId, foodData) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const foodLogEntry = {
       userId,
@@ -77,6 +90,9 @@ export const logFoodItem = async (userId, foodData) => {
  * Get food log for a specific date
  */
 export const getFoodLogByDate = async (userId, date) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const q = query(
       collection(db, 'foodLog'),
@@ -103,6 +119,9 @@ export const getFoodLogByDate = async (userId, date) => {
  * Get food log for a date range
  */
 export const getFoodLogByDateRange = async (userId, startDate, endDate) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const q = query(
       collection(db, 'foodLog'),
@@ -196,6 +215,9 @@ export const getDailyTotals = async (userId, date) => {
  * Update a food log entry
  */
 export const updateFoodLogEntry = async (entryId, updates) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const entryRef = doc(db, 'foodLog', entryId);
     await updateDoc(entryRef, {
@@ -215,6 +237,9 @@ export const updateFoodLogEntry = async (entryId, updates) => {
  * Delete a food log entry
  */
 export const deleteFoodLogEntry = async (entryId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     await deleteDoc(doc(db, 'foodLog', entryId));
     return { success: true };

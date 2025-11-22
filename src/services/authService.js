@@ -1,4 +1,4 @@
-import { auth, isFirebaseConfigured, firebaseConfigError } from '../config/firebase';
+import { auth, isFirebaseConfigured, firebaseConfigError, isFirebaseFullyInitialized } from '../config/firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -23,6 +23,11 @@ const checkFirebaseConfig = () => {
   if (!isFirebaseConfigured || !auth) {
     return createErrorResponse(ERROR_CODES.AUTH_CONFIG_NOT_FOUND,
       firebaseConfigError?.message || 'Firebase is not configured. Please set up your .env file.');
+  }
+  // Also check if Firestore is initialized (needed for profile operations)
+  if (!isFirebaseFullyInitialized) {
+    return createErrorResponse(ERROR_CODES.AUTH_CONFIG_NOT_FOUND,
+      'Firebase services failed to initialize. Please check your configuration and try again.');
   }
   return null;
 };
@@ -78,7 +83,8 @@ export const registerUser = async (email, password, fullName = '') => {
         email: user.email,
         displayName: fullName
       },
-      token: await user.getIdToken()
+      token: await user.getIdToken(),
+      onboardingComplete: false
     };
   } catch (error) {
     const errorCode = mapAuthErrorCode(error.code);

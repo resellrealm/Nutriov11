@@ -1,4 +1,4 @@
-import { db } from '../config/firebase';
+import { db, isFirebaseFullyInitialized } from '../config/firebase';
 import {
   doc,
   getDoc,
@@ -12,6 +12,15 @@ import {
   createErrorResponse
 } from '../utils/errorCodes';
 
+// Helper to check if Firestore is available
+const checkFirestoreConfig = () => {
+  if (!isFirebaseFullyInitialized || !db) {
+    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
+      'Database is not configured. Please check your Firebase setup.');
+  }
+  return null;
+};
+
 /**
  * User Service
  * Handles all user profile operations in Firestore
@@ -19,6 +28,9 @@ import {
 
 // Create a new user profile after registration
 export const createUserProfile = async (userId, email) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const userRef = doc(db, 'users', userId);
     const userData = {
@@ -144,6 +156,9 @@ export const createUserProfile = async (userId, email) => {
 
 // Get user profile
 export const getUserProfile = async (userId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
@@ -161,6 +176,9 @@ export const getUserProfile = async (userId) => {
 
 // Update user profile (partial update)
 export const updateUserProfile = async (userId, updates) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const userRef = doc(db, 'users', userId);
     await updateDoc(userRef, {
@@ -176,6 +194,9 @@ export const updateUserProfile = async (userId, updates) => {
 
 // Update onboarding progress
 export const updateOnboardingProgress = async (userId, screenNumber, data) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const userRef = doc(db, 'users', userId);
     const updates = {
@@ -195,6 +216,9 @@ export const updateOnboardingProgress = async (userId, screenNumber, data) => {
 
 // Complete onboarding
 export const completeOnboarding = async (userId, calculatedMetrics) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
   try {
     const userRef = doc(db, 'users', userId);
     await updateDoc(userRef, {
