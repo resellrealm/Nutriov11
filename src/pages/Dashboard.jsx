@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { getUserProfile } from '../services/userService';
 import { getDailyTotals, getWeeklySummary } from '../services/foodLogService';
+import { getMealOfTheDay } from '../services/recipeService';
 import toast from 'react-hot-toast';
 
 // Motivational quotes based on user goals
@@ -69,6 +70,7 @@ const Dashboard = () => {
   const [weeklyCalories, setWeeklyCalories] = useState([]);
   const [macroData, setMacroData] = useState([]);
   const [mealTypeData, setMealTypeData] = useState([]);
+  const [recommendedMeal, setRecommendedMeal] = useState(null);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -86,6 +88,10 @@ const Dashboard = () => {
       // Set personalized quote
       const goal = profile.goals?.primary || 'default';
       setQuoteOfDay(getQuoteByGoal(goal));
+
+      // Get meal of the day
+      const todaysMeal = getMealOfTheDay();
+      setRecommendedMeal(todaysMeal);
 
       // Fetch today's food log
       const today = new Date().toISOString().split('T')[0];
@@ -322,6 +328,65 @@ const Dashboard = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Recommended Meal of the Day */}
+      {recommendedMeal && (
+        <motion.div
+          className="bg-gradient-to-r from-primary/10 to-emerald-500/10 dark:from-primary/20 dark:to-emerald-500/20 border border-primary/20 rounded-xl p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-3xl">{recommendedMeal.image}</span>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Today's Recommended Meal
+                </h3>
+              </div>
+              <h4 className="text-xl font-bold text-primary mb-2">
+                {recommendedMeal.name}
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400 mb-3">
+                {recommendedMeal.description}
+              </p>
+              <div className="flex flex-wrap gap-3 mb-3">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  {recommendedMeal.calories} cal
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                  {recommendedMeal.protein}g protein
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
+                  {recommendedMeal.carbs}g carbs
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                  {recommendedMeal.fat}g fat
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {recommendedMeal.tags?.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => window.location.href = '/meal-planner'}
+              className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition text-sm"
+            >
+              Plan Your Meals
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Quick Stats Grid */}
       <motion.div
