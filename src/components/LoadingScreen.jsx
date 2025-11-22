@@ -14,10 +14,10 @@ const LoadingScreen = ({ onLoadingComplete }) => {
           }, 300);
           return 100;
         }
-        // Consistent progress: 10% every 150ms = ~1.5 seconds to complete
+        // Consistent progress: 10% every 600ms = 6 seconds to complete
         return Math.min(oldProgress + 10, 100);
       });
-    }, 150);
+    }, 600);
 
     return () => {
       clearInterval(timer);
