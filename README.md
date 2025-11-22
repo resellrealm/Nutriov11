@@ -1,21 +1,26 @@
-# Nutrio v11
+# Nutrio
 
 A comprehensive nutrition tracking and meal planning application built with React, Firebase, and modern web technologies.
 
 ## Features
 
 ### User Onboarding & Personalization
-- **Personalized Setup**: Complete onboarding flow for new users
-- **Dietary Style Preferences**: Support for various diets (vegan, vegetarian, keto, paleo, etc.)
-- **Goal Setting**: Weight loss, muscle gain, maintenance, or general health improvement
-- **Body Metrics**: Track height, weight, BMI, and calculate TDEE
-- **Activity Level Assessment**: Sedentary to extremely active options
-- **Meal Timing Preferences**: Customize breakfast, lunch, dinner, and snack times
-- **Budget Planning**: Set weekly grocery budgets per person
-- **Household Settings**: Family size considerations for meal planning
+- **20-Step Comprehensive Onboarding**: Complete personalization flow covering:
+  - Welcome and basic info (name, age, height, weight)
+  - Primary health goals (weight loss, muscle gain, maintenance, etc.)
+  - Timeline and activity level assessment
+  - Exercise preferences and dietary restrictions
+  - Allergies and cuisine preferences
+  - Favorite and disliked foods
+  - Household size and budget planning
+  - Shopping preferences and meal timing
+  - Cooking skill level and medical conditions
+  - Supplement usage and notification preferences
+- **Calculated Metrics**: BMI, BMR, TDEE based on your profile
+- **Goal-Specific Recommendations**: Personalized calorie and macro targets
 
 ### Dashboard
-- **Daily Recommended Meal**: Unique meal suggestion that changes daily (62+ recipes in rotation)
+- **Daily Recommended Meal**: Unique meal suggestion that changes daily (62 recipes in rotation)
 - **Motivational Quotes**: Goal-specific daily quotes
 - **Quick Stats**: Calories, protein, streak, weight at a glance
 - **Weekly Charts**: Calorie intake bar charts, macronutrient distribution pie charts
@@ -23,7 +28,7 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 - **Progress Tracking**: Average daily calories, meals logged, daily goals
 
 ### Recipe System
-- **62+ Built-in Recipes**: Professionally crafted meals covering breakfast, lunch, dinner, and snacks
+- **62 Built-in Recipes**: Professionally crafted meals covering breakfast, lunch, dinner, and snacks
 - **Daily Meal Rotation**: Different recommended meal each day for 2+ months
 - **Nutritional Info**: Calories, protein, carbs, fat, fiber for every recipe
 - **Detailed Instructions**: Step-by-step cooking instructions
@@ -34,13 +39,13 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 
 ### Food Logging
 - **Multiple Input Methods**:
-  - Barcode scanning
-  - Photo analysis (AI-powered)
+  - Barcode scanning (with Open Food Facts integration)
+  - Photo analysis (AI-powered via OpenAI)
   - Manual entry
 - **Meal Type Categorization**: Breakfast, lunch, dinner, snacks
 - **Nutritional Tracking**: Calories, protein, carbs, fat, fiber, sugar, sodium
 - **Daily & Weekly Summaries**: Aggregated nutrition data
-- **History View**: Complete food log history
+- **History View**: Complete food log history with filtering
 
 ### Meal Planning
 - **Fridge Scanning**: Upload photos to detect available ingredients
@@ -51,15 +56,15 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 
 ### Additional Features
 - **Grocery List Generation**: Auto-generate shopping lists based on meal plans
-- **Achievements System**: 40+ unique achievements to unlock
+- **Achievements System**: Unlock achievements for consistent tracking
 - **Favorites Management**: Save and organize favorite recipes
-- **Goals Tracking**: Detailed progress toward health goals
+- **Goals Tracking**: Detailed progress toward health goals with visual charts
 - **Dark Mode**: Full dark/light theme support
 - **Responsive Design**: Works on desktop, tablet, and mobile
-- **Offline Support**: PWA capabilities for offline use
+- **Account Management**: Update profile, preferences, and settings
 
 ### Data & Privacy
-- **Firebase Authentication**: Secure user accounts
+- **Firebase Authentication**: Secure user accounts with email/password
 - **Firestore Database**: Real-time data sync
 - **User Data Ownership**: Full control over your nutrition data
 
@@ -68,20 +73,20 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 - **Frontend**: React 18, Vite
 - **Styling**: TailwindCSS
 - **State Management**: Redux Toolkit
-- **Backend**: Firebase (Auth, Firestore, Storage)
+- **Backend**: Firebase (Auth, Firestore)
 - **Animations**: Framer Motion
 - **Charts**: Recharts
-- **Mobile**: Capacitor
+- **Mobile**: Capacitor (iOS support)
 - **Icons**: Lucide React
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/resellrealm/Nutriov11.git
+git clone https://github.com/resellrealm/Nutrio.git
 
 # Navigate to project
-cd Nutriov11
+cd Nutrio
 
 # Install dependencies
 npm install
@@ -103,6 +108,11 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
 
+For AI-powered meal analysis, add:
+```env
+VITE_OPENAI_API_KEY=your_openai_api_key
+```
+
 ## Build
 
 ```bash
@@ -111,6 +121,9 @@ npm run build
 
 # Preview production build
 npm run preview
+
+# iOS build
+npm run ios
 ```
 
 ## Project Structure
@@ -118,37 +131,67 @@ npm run preview
 ```
 src/
 ├── components/        # Reusable UI components
-├── config/           # Firebase and app configuration
+│   ├── Layout/       # App layout, sidebar, header
+│   ├── OnboardingV2/ # 20-step onboarding flow
+│   └── ...
+├── config/           # Firebase configuration
 ├── pages/            # Main application pages
-├── services/         # Firestore services (user, food log, recipes, grocery)
+│   ├── Dashboard.jsx
+│   ├── MealAnalyzer.jsx
+│   ├── MealPlanner.jsx
+│   ├── GroceryList.jsx
+│   ├── Goals.jsx
+│   ├── Favourites.jsx
+│   ├── Achievements.jsx
+│   ├── History.jsx
+│   ├── Account.jsx
+│   ├── BarcodeScanner.jsx
+│   ├── Login.jsx
+│   └── Register.jsx
+├── services/         # Firestore services
+│   ├── userService.js
+│   ├── foodLogService.js
+│   ├── recipeService.js
+│   ├── groceryListService.js
+│   ├── authService.js
+│   └── openFoodFactsService.js
 ├── store/            # Redux store and slices
-├── utils/            # Utility functions and helpers
+│   ├── store.js
+│   ├── authSlice.js
+│   ├── onboardingSlice.js
+│   ├── nutritionSlice.js
+│   └── achievementsSlice.js
+├── utils/            # Utility functions
 └── App.jsx           # Main application component
 ```
 
 ## Key Services
 
-- **userService.js**: User profile management, onboarding, calculated metrics
-- **foodLogService.js**: Food logging, daily/weekly summaries
-- **recipeService.js**: 62+ built-in recipes, user custom recipes, meal of the day
-- **groceryListService.js**: Smart grocery list generation
+- **userService.js**: User profile management, onboarding data, calculated metrics (BMI, BMR, TDEE)
+- **foodLogService.js**: Food logging, daily/weekly nutrition summaries
+- **recipeService.js**: 62 built-in recipes, user custom recipes, meal of the day
+- **groceryListService.js**: Smart grocery list generation from recipes
+- **authService.js**: Firebase authentication wrapper
+- **openFoodFactsService.js**: Barcode product lookup
 
-## Future Enhancements
+## Available Scripts
 
-- Spoonacular API integration for expanded recipe database
-- AI-powered meal planning with personalized recommendations
-- Social features for sharing recipes and progress
-- Integration with fitness trackers
-- Barcode database expansion
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run ios` - Build and open iOS app
 
 ## Version
 
 11.0.0 - Complete nutrition tracking app with:
-- 62+ built-in recipes for daily meal recommendations
+- 62 built-in recipes for daily meal recommendations
+- 20-step comprehensive onboarding flow
 - User custom recipe storage in Firestore
-- Comprehensive dashboard with charts and stats
-- Full onboarding flow with personalized calculations
+- Dashboard with charts and progress tracking
 - Food logging via barcode, photo, or manual entry
+- Grocery list generation
+- Achievements and goals tracking
 
 ## License
 
