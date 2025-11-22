@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -16,9 +17,11 @@ import {
   Lock,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { logout } from '../../store/authSlice';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Compute premium status safely from localStorage
   const isPremium = useMemo(() => {
@@ -95,12 +98,8 @@ const Sidebar = ({ isOpen, onClose }) => {
   ];
 
   const handleLogout = () => {
-    // Clear auth-related localStorage items
-    const authKeys = [
-      'token', 'user', 'onboardingComplete', 'isPremium',
-      'dailyScansUsed', 'lastScanDate', 'planTier', 'onboarding_progress'
-    ];
-    authKeys.forEach(key => localStorage.removeItem(key));
+    // Dispatch logout action (clears Redux state and localStorage)
+    dispatch(logout());
     toast.success('Logged out successfully');
     navigate('/login');
     onClose && onClose();

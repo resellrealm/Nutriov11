@@ -289,34 +289,39 @@ export const calculateMacros = (tdee, goal) => {
 
 // Calculate all metrics at once
 export const calculateAllMetrics = (userProfile) => {
-  const { basicInfo, goals, exercise: _exercise } = userProfile;
+  const { basicInfo, goals, exercise: _exercise } = userProfile || {};
 
-  const bmi = calculateBMI(
-    basicInfo.currentWeight.value,
-    basicInfo.height.value,
-    basicInfo.currentWeight.unit,
-    basicInfo.height.unit
-  );
+  // Default values for safety
+  const weight = basicInfo?.currentWeight?.value || 70;
+  const height = basicInfo?.height?.value || 170;
+  const weightUnit = basicInfo?.currentWeight?.unit || 'kg';
+  const heightUnit = basicInfo?.height?.unit || 'cm';
+  const age = basicInfo?.age || 30;
+  const gender = basicInfo?.gender || 'male';
+  const activityLevel = goals?.activityLevel || 'moderate';
+  const primaryGoal = goals?.primary || 'maintain';
+
+  const bmi = calculateBMI(weight, height, weightUnit, heightUnit);
 
   const tdee = calculateTDEE(
-    basicInfo.currentWeight.value,
-    basicInfo.height.value,
-    basicInfo.age,
-    basicInfo.gender,
-    goals.activityLevel,
-    basicInfo.currentWeight.unit,
-    basicInfo.height.unit
+    weight,
+    height,
+    age,
+    gender,
+    activityLevel,
+    weightUnit,
+    heightUnit
   );
 
   // Adjust TDEE based on goal
   let recommendedCalories = tdee;
-  if (goals.primary === 'lose_weight') {
+  if (primaryGoal === 'lose_weight') {
     recommendedCalories = Math.round(tdee * 0.85); // 15% deficit
-  } else if (goals.primary === 'gain_muscle') {
+  } else if (primaryGoal === 'gain_muscle') {
     recommendedCalories = Math.round(tdee * 1.1); // 10% surplus
   }
 
-  const macros = calculateMacros(recommendedCalories, goals.primary);
+  const macros = calculateMacros(recommendedCalories, primaryGoal);
 
   return {
     bmi,
