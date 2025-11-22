@@ -205,9 +205,16 @@ body {
   }
 }
 
-/* Smooth transitions for dark mode */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+/* Smooth transitions for dark mode - applied only to theme-sensitive elements */
+.dark,
+.dark body,
+.glass,
+button,
+a,
+input,
+select,
+textarea {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 /* Custom checkbox styling */

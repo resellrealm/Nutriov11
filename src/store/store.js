@@ -13,7 +13,6 @@ const loadOnboardingState = () => {
     }
     return JSON.parse(serializedState);
   } catch (err) {
-    console.error('Failed to load onboarding state:', err);
     return undefined;
   }
 };
@@ -34,14 +33,18 @@ export const store = configureStore({
     }),
 });
 
-// Subscribe to store changes and save onboarding state to localStorage
+// Debounced localStorage save to avoid excessive writes
+let saveTimeout = null;
 store.subscribe(() => {
-  try {
-    const state = store.getState().onboarding;
-    localStorage.setItem('onboarding_progress', JSON.stringify(state));
-  } catch (err) {
-    console.error('Failed to save onboarding state:', err);
-  }
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    try {
+      const state = store.getState().onboarding;
+      localStorage.setItem('onboarding_progress', JSON.stringify(state));
+    } catch (err) {
+      // Silent fail for localStorage errors
+    }
+  }, 1000);
 });
 
 export default store;
