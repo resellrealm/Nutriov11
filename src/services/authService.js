@@ -10,7 +10,6 @@ import { createUserProfile, getUserProfile } from './userService';
 import {
   ERROR_CODES,
   mapAuthErrorCode,
-  getErrorMessage,
   createErrorResponse
 } from '../utils/errorCodes';
 

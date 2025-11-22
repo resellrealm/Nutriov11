@@ -8,7 +8,6 @@ import {
 } from 'firebase/firestore';
 import {
   ERROR_CODES,
-  getErrorMessage,
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';

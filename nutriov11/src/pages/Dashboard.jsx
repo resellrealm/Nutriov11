@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { 
@@ -59,9 +59,34 @@ const get365Meals = () => {
 };
 
 const Dashboard = () => {
-  const [quoteOfDay, setQuoteOfDay] = useState('');
-  const [dailyMeal, setDailyMeal] = useState(null);
   const userProfile = useSelector(state => state.onboarding);
+
+  // Initialize quote and meal with lazy initialization
+  const [quoteOfDay] = useState(() => {
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    return quotes[dayOfYear % quotes.length];
+  });
+
+  const [dailyMeal] = useState(() => {
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const allMeals = get365Meals();
+    let recommendedMeal = allMeals[dayOfYear % 365];
+
+    // Filter by dietary preference
+    if (userProfile?.dietaryPreferences) {
+      const prefs = userProfile.dietaryPreferences;
+      if (prefs.includes('vegan')) {
+        recommendedMeal = allMeals.find(m => m.vegan && m.dayOfYear === (dayOfYear % 365)) ||
+                         allMeals.find(m => m.vegan) ||
+                         recommendedMeal;
+      } else if (prefs.includes('vegetarian')) {
+        recommendedMeal = allMeals.find(m => m.vegetarian && m.dayOfYear === (dayOfYear % 365)) ||
+                         allMeals.find(m => m.vegetarian) ||
+                         recommendedMeal;
+      }
+    }
+    return recommendedMeal;
+  });
 
   // Sample nutrition data for charts
   const [weeklyCalories] = useState([
@@ -96,32 +121,6 @@ const Dashboard = () => {
   ]);
 
   const MEAL_COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
-
-  useEffect(() => {
-    // Get quote of the day
-    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-    setQuoteOfDay(quotes[dayOfYear % quotes.length]);
-
-    // Get meal of the day based on day of year
-    const allMeals = get365Meals();
-    let recommendedMeal = allMeals[dayOfYear % 365];
-
-    // Filter by dietary preference
-    if (userProfile?.dietaryPreferences) {
-      const prefs = userProfile.dietaryPreferences;
-      if (prefs.includes('vegan')) {
-        recommendedMeal = allMeals.find(m => m.vegan && m.dayOfYear === (dayOfYear % 365)) || 
-                         allMeals.find(m => m.vegan) ||
-                         recommendedMeal;
-      } else if (prefs.includes('vegetarian')) {
-        recommendedMeal = allMeals.find(m => m.vegetarian && m.dayOfYear === (dayOfYear % 365)) || 
-                         allMeals.find(m => m.vegetarian) ||
-                         recommendedMeal;
-      }
-    }
-
-    setDailyMeal(recommendedMeal);
-  }, [userProfile]);
 
   return (
     <div className="space-y-6 pb-8">

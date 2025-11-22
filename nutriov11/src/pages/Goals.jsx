@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -21,11 +21,11 @@ import toast from 'react-hot-toast';
 
 const Goals = () => {
   const [timeInterval, setTimeInterval] = useState('daily'); // daily, weekly, custom
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [_isEditMode, setIsEditMode] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
-  
+
   // Current intake (would come from backend)
-  const [currentIntake, setCurrentIntake] = useState({
+  const [currentIntake, _setCurrentIntake] = useState({
     calories: 1650,
     protein: 78,
     carbs: 180,

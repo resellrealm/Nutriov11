@@ -1,6 +1,5 @@
 import axios from 'axios';
 import {
-  createErrorResponse,
   handleApiError
 } from '../utils/errorCodes';
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,7 +39,28 @@ const OnboardingFlow = () => {
       dispatch(saveProgress());
     };
   }, [dispatch]);
-  
+
+  const handleComplete = useCallback(() => {
+    dispatch(completeOnboarding());
+    navigate('/dashboard');
+  }, [dispatch, navigate]);
+
+  const handleNext = useCallback(() => {
+    if (currentStep === totalSteps) {
+      handleComplete();
+    } else {
+      dispatch(nextStep());
+    }
+  }, [currentStep, totalSteps, handleComplete, dispatch]);
+
+  const handlePrevious = useCallback(() => {
+    dispatch(previousStep());
+  }, [dispatch]);
+
+  const handleSave = () => {
+    dispatch(saveProgress());
+  };
+
   // Keyboard navigation (Arrow keys)
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -49,31 +70,10 @@ const OnboardingFlow = () => {
         handlePrevious();
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStep, stepValidation]);
-  
-  const handleNext = () => {
-    if (currentStep === totalSteps) {
-      handleComplete();
-    } else {
-      dispatch(nextStep());
-    }
-  };
-  
-  const handlePrevious = () => {
-    dispatch(previousStep());
-  };
-  
-  const handleSave = () => {
-    dispatch(saveProgress());
-  };
-  
-  const handleComplete = () => {
-    dispatch(completeOnboarding());
-    navigate('/dashboard');
-  };
+  }, [currentStep, stepValidation, handleNext, handlePrevious]);
   
   const renderStep = () => {
     switch (currentStep) {

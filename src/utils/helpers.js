@@ -2,8 +2,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import {
   ERROR_CODES,
-  handleStorageError,
-  getErrorMessage
+  handleStorageError
 } from './errorCodes';
 
 // Tailwind CSS class merger

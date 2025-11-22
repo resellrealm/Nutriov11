@@ -1,8 +1,7 @@
 import axios from 'axios';
 import {
   ERROR_CODES,
-  handleApiError,
-  createErrorResponse
+  handleApiError
 } from './errorCodes';
 
 // API Configuration
