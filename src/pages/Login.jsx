@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Sparkles, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, Mail, Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { loginUser } from '../services/authService';
 import { setCredentials, setOnboardingComplete } from '../store/authSlice';
+import { isFirebaseConfigured } from '../config/firebase';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -81,6 +82,22 @@ const Login = () => {
             </h1>
             <p className="text-gray-600 mt-2">Welcome back! Let's continue your journey.</p>
           </div>
+
+          {/* Firebase Configuration Warning */}
+          {!isFirebaseConfigured && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="text-amber-500 flex-shrink-0 mt-0.5" size={20} />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Firebase Not Configured</p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Create a <code className="bg-amber-100 px-1 rounded">.env</code> file based on{' '}
+                    <code className="bg-amber-100 px-1 rounded">.env.example</code> with your Firebase credentials.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
