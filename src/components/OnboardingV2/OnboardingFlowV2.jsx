@@ -189,7 +189,8 @@ const OnboardingFlowV2 = () => {
         throw new Error(result.error);
       }
     } catch (error) {
-      toast.error('Failed to complete onboarding. Please try again.');
+      console.error('Onboarding completion error:', error);
+      toast.error(error.message || 'Failed to complete onboarding. Please try again.');
     } finally {
       setIsCompleting(false);
     }
