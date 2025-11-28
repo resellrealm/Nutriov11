@@ -34,21 +34,34 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('🔵 [LOGIN] Form submitted');
+    console.log('🔵 [LOGIN] Email:', formData.email);
+
     if (!formData.email || !formData.password) {
       toast.error('Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
+    console.log('🔵 [LOGIN] Starting login process...');
 
     try {
       const result = await loginUser(formData.email, formData.password);
 
+      console.log('🔵 [LOGIN] Login result:', result);
+      console.log('🔵 [LOGIN] Success:', result.success);
+
       if (result.success) {
+        console.log('✅ [LOGIN] Login successful!');
+        console.log('✅ [LOGIN] User:', result.user);
+        console.log('✅ [LOGIN] Onboarding complete:', result.onboardingComplete);
+
         // Store auth data
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('onboardingComplete', result.onboardingComplete.toString());
+
+        console.log('✅ [LOGIN] Data stored in localStorage');
 
         // Update Redux
         dispatch(setCredentials({
@@ -58,22 +71,32 @@ const Login = () => {
 
         dispatch(setOnboardingComplete(result.onboardingComplete));
 
+        console.log('✅ [LOGIN] Redux state updated');
+
         toast.success('Welcome back!');
 
         // Navigate based on onboarding status
         if (result.onboardingComplete) {
+          console.log('✅ [LOGIN] Navigating to / (home)');
           navigate('/');
         } else {
+          console.log('✅ [LOGIN] Navigating to /onboarding');
           navigate('/onboarding');
         }
       } else {
+        console.error('❌ [LOGIN] Login failed:', result.error);
+        console.error('❌ [LOGIN] Error code:', result.errorCode);
+        console.error('❌ [LOGIN] Full result:', result);
         toast.error(result.error || 'Failed to login');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ [LOGIN] Exception caught:', error);
+      console.error('❌ [LOGIN] Error message:', error.message);
+      console.error('❌ [LOGIN] Error stack:', error.stack);
       toast.error('An unexpected error occurred');
     } finally {
       setIsLoading(false);
+      console.log('🔵 [LOGIN] Login process finished');
     }
   };
 

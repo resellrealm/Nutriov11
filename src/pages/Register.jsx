@@ -39,6 +39,10 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('🟢 [REGISTER] Form submitted');
+    console.log('🟢 [REGISTER] Name:', formData.name);
+    console.log('🟢 [REGISTER] Email:', formData.email);
+
     // Validation
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match!');
@@ -61,15 +65,25 @@ const Register = () => {
     }
 
     setIsLoading(true);
+    console.log('🟢 [REGISTER] Starting registration process...');
 
     try {
       const result = await registerUser(formData.email, formData.password, formData.name);
 
+      console.log('🟢 [REGISTER] Registration result:', result);
+      console.log('🟢 [REGISTER] Success:', result.success);
+
       if (result.success) {
+        console.log('✅ [REGISTER] Registration successful!');
+        console.log('✅ [REGISTER] User:', result.user);
+        console.log('✅ [REGISTER] Token:', result.token ? 'Present' : 'Missing');
+
         // Store auth data
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('onboardingComplete', 'false');
+
+        console.log('✅ [REGISTER] Data stored in localStorage');
 
         // Update Redux
         dispatch(setCredentials({
@@ -78,18 +92,27 @@ const Register = () => {
         }));
         dispatch(setOnboardingComplete(false));
 
+        console.log('✅ [REGISTER] Redux state updated');
+
         toast.success('Account created! Let\'s set up your profile.');
 
+        console.log('✅ [REGISTER] Navigating to /onboarding');
         // Navigate to onboarding
         navigate('/onboarding');
       } else {
+        console.error('❌ [REGISTER] Registration failed:', result.error);
+        console.error('❌ [REGISTER] Error code:', result.errorCode);
+        console.error('❌ [REGISTER] Full result:', result);
         toast.error(result.error || 'Failed to create account');
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('❌ [REGISTER] Exception caught:', error);
+      console.error('❌ [REGISTER] Error message:', error.message);
+      console.error('❌ [REGISTER] Error stack:', error.stack);
       toast.error('An unexpected error occurred');
     } finally {
       setIsLoading(false);
+      console.log('🟢 [REGISTER] Registration process finished');
     }
   };
 
