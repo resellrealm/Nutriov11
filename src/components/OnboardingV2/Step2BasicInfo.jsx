@@ -83,21 +83,27 @@ const Step2BasicInfo = () => {
         />
       </div>
 
-      {/* Gender */}
+      {/* Sex */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Gender</label>
-        <div className="grid grid-cols-2 gap-3">
-          {['male', 'female', 'non_binary', 'prefer_not_to_say'].map((gender) => (
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Sex <span className="text-xs text-gray-500">(This helps get more accurate results)</span>
+        </label>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { value: 'male', label: 'Male' },
+            { value: 'female', label: 'Female' },
+            { value: 'prefer_not_to_say', label: 'Prefer not to say' }
+          ].map((option) => (
             <button
-              key={gender}
-              onClick={() => handleChange('gender', gender)}
+              key={option.value}
+              onClick={() => handleChange('gender', option.value)}
               className={`p-3 rounded-xl border-2 transition-all ${
-                formData.gender === gender
+                formData.gender === option.value
                   ? 'border-primary bg-primary/10'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              {gender.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {option.label}
             </button>
           ))}
         </div>

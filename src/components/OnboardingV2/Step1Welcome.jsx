@@ -35,6 +35,15 @@ const Step1Welcome = ({ onNext }) => {
         <p className="text-lg text-gray-600 max-w-md mx-auto">
           Let's personalize your nutrition journey. We'll ask you a few questions to create a customized plan just for you.
         </p>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-lg mx-auto">
+          <p className="text-sm text-blue-800 font-medium">
+            ⏱️ This will take approximately 5-10 minutes
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            We collect this information to provide you with personalized nutrition recommendations, accurate calorie tracking, and meal plans tailored to your health goals, dietary preferences, and lifestyle. Your data helps us create the most effective nutrition strategy for your unique needs.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-4 bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-6">
@@ -70,9 +79,6 @@ const Step1Welcome = ({ onNext }) => {
       </div>
 
       <div className="text-center">
-        <p className="text-sm text-gray-500 mb-4">
-          This will take about 5-7 minutes
-        </p>
         <button
           onClick={handleGetStarted}
           className="px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"

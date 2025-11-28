@@ -99,7 +99,12 @@ function AppContent() {
       {isLoading ? (
         <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
       ) : (
-        <Router>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
             <Toaster
               position="top-right"

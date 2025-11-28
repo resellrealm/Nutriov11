@@ -12,6 +12,7 @@ const Step6Exercise = () => {
   const [localData, setLocalData] = useState(exerciseData);
 
   const exerciseTypes = [
+    { id: 'none', label: "I don't work out", icon: '🚫' },
     { id: 'cardio', label: 'Cardio', icon: '🏃' },
     { id: 'strength', label: 'Strength Training', icon: '💪' },
     { id: 'yoga', label: 'Yoga', icon: '🧘' },
@@ -52,7 +53,7 @@ const Step6Exercise = () => {
     >
       <div>
         <h3 className="text-2xl font-bold text-gray-800 mb-2">Tell us about your typical workout</h3>
-        <p className="text-gray-600">What types of exercise do you enjoy?</p>
+        <p className="text-gray-600">What types of exercise do you enjoy? <span className="text-sm text-gray-500 italic">(Optional - skip if you don't work out)</span></p>
       </div>
 
       {/* Exercise Types */}
