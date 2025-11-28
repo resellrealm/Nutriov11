@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Provider, useSelector, useDispatch } from 'react-redux';
@@ -14,20 +14,27 @@ import LoadingScreen from './components/LoadingScreen';
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
 
-// Pages
-import OnboardingFlowV2 from './components/OnboardingV2/OnboardingFlowV2';
-import Dashboard from './pages/Dashboard';
-import MealAnalyzer from './pages/MealAnalyzer';
-import MealPlanner from './pages/MealPlanner';
-import Goals from './pages/Goals';
-import Favourites from './pages/Favourites';
-import Achievements from './pages/Achievements';
-import History from './pages/History';
-import Account from './pages/Account';
-import GroceryList from './pages/GroceryList';
-import BarcodeScanner from './pages/BarcodeScanner';
-import Login from './pages/Login';
-import Register from './pages/Register';
+// Lazy-loaded pages for code splitting
+const OnboardingFlowV2 = lazy(() => import('./components/OnboardingV2/OnboardingFlowV2'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const MealAnalyzer = lazy(() => import('./pages/MealAnalyzer'));
+const MealPlanner = lazy(() => import('./pages/MealPlanner'));
+const Goals = lazy(() => import('./pages/Goals'));
+const Favourites = lazy(() => import('./pages/Favourites'));
+const Achievements = lazy(() => import('./pages/Achievements'));
+const History = lazy(() => import('./pages/History'));
+const Account = lazy(() => import('./pages/Account'));
+const GroceryList = lazy(() => import('./pages/GroceryList'));
+const BarcodeScanner = lazy(() => import('./pages/BarcodeScanner'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 // Protected Route Component - uses Redux state for consistency
 const ProtectedRoute = ({ children }) => {
@@ -131,52 +138,54 @@ function AppContent() {
                 },
               }}
             />
-            <Routes>
-              {/* Auth Routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route
-                path="/onboarding"
-                element={
-                  <AuthRequiredRoute>
-                    <OnboardingFlowV2 />
-                  </AuthRequiredRoute>
-                }
-              />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Auth Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route
+                  path="/onboarding"
+                  element={
+                    <AuthRequiredRoute>
+                      <OnboardingFlowV2 />
+                    </AuthRequiredRoute>
+                  }
+                />
 
-              {/* Barcode Scanner - Full Screen (Outside Layout) */}
-              <Route
-                path="/barcode"
-                element={
-                  <ProtectedRoute>
-                    <BarcodeScanner />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Barcode Scanner - Full Screen (Outside Layout) */}
+                <Route
+                  path="/barcode"
+                  element={
+                    <ProtectedRoute>
+                      <BarcodeScanner />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Protected Routes */}
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Layout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Dashboard />} />
-                <Route path="analyze" element={<MealAnalyzer />} />
-                <Route path="meal-planner" element={<MealPlanner />} />
-                <Route path="grocery-list" element={<GroceryList />} />
-                <Route path="goals" element={<Goals />} />
-                <Route path="favourites" element={<Favourites />} />
-                <Route path="achievements" element={<Achievements />} />
-                <Route path="history" element={<History />} />
-                <Route path="account" element={<Account />} />
-              </Route>
+                {/* Protected Routes */}
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Dashboard />} />
+                  <Route path="analyze" element={<MealAnalyzer />} />
+                  <Route path="meal-planner" element={<MealPlanner />} />
+                  <Route path="grocery-list" element={<GroceryList />} />
+                  <Route path="goals" element={<Goals />} />
+                  <Route path="favourites" element={<Favourites />} />
+                  <Route path="achievements" element={<Achievements />} />
+                  <Route path="history" element={<History />} />
+                  <Route path="account" element={<Account />} />
+                </Route>
 
-              {/* 404 Catch-all Route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                {/* 404 Catch-all Route */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </div>
         </Router>
       )}
