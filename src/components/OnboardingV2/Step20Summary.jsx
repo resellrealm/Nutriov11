@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Edit, User, Target, Utensils, ShoppingCart, DollarSign } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { confirmSummary, setStep } from '../../store/onboardingSlice';
+import { confirmSummary, setStep, setTermsAccepted, setEditingFromReview } from '../../store/onboardingSlice';
 
 const Step20Summary = () => {
   const dispatch = useDispatch();
   const onboarding = useSelector(state => state.onboarding);
-  const { basicInfo, primaryGoal, household, budget, cuisinePreferences, dietaryRestrictions } = onboarding;
+  const { basicInfo, primaryGoal, household, budget, cuisinePreferences, dietaryRestrictions, termsAccepted } = onboarding;
+  const [localTermsAccepted, setLocalTermsAccepted] = useState(termsAccepted || false);
+
+  useEffect(() => {
+    dispatch(setTermsAccepted(localTermsAccepted));
+  }, [localTermsAccepted, dispatch]);
 
   const handleEdit = (stepNumber) => {
+    dispatch(setEditingFromReview(true));
     dispatch(setStep(stepNumber));
   };
 
@@ -124,10 +130,30 @@ const Step20Summary = () => {
         </ul>
       </div>
 
-      <div className="text-center pt-4">
-        <p className="text-sm text-gray-500 mb-4">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+      <div className="pt-4">
+        <label className="flex items-start space-x-3 p-4 bg-gray-50 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
+          <input
+            type="checkbox"
+            checked={localTermsAccepted}
+            onChange={(e) => setLocalTermsAccepted(e.target.checked)}
+            className="w-5 h-5 mt-0.5 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer"
+          />
+          <span className="text-sm text-gray-700">
+            I agree to the{' '}
+            <a href="/terms" target="_blank" className="text-primary hover:underline font-medium">
+              Terms of Service
+            </a>
+            {' '}and{' '}
+            <a href="/privacy" target="_blank" className="text-primary hover:underline font-medium">
+              Privacy Policy
+            </a>
+          </span>
+        </label>
+        {!localTermsAccepted && (
+          <p className="text-xs text-red-600 mt-2 text-center">
+            Please accept the terms and privacy policy to continue
+          </p>
+        )}
       </div>
     </motion.div>
   );

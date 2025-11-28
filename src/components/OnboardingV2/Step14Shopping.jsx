@@ -12,12 +12,12 @@ const Step14Shopping = () => {
   const [localData, setLocalData] = useState(prefs);
 
   const stores = [
-    { id: 'whole_foods', label: 'Whole Foods', icon: '🥬' },
-    { id: 'trader_joes', label: 'Trader Joe\'s', icon: '🛒' },
-    { id: 'walmart', label: 'Walmart', icon: '🏪' },
-    { id: 'costco', label: 'Costco', icon: '📦' },
-    { id: 'local_markets', label: 'Local Markets', icon: '🏪' },
-    { id: 'online_delivery', label: 'Online Delivery', icon: '📱' }
+    { id: 'online', label: 'Online Groceries', icon: '📱' },
+    { id: 'supermarkets', label: 'Supermarkets', icon: '🏪' },
+    { id: 'food_markets', label: 'Food Markets', icon: '🥬' },
+    { id: 'local_stores', label: 'Local Stores', icon: '🛒' },
+    { id: 'warehouse_clubs', label: 'Warehouse Clubs', icon: '📦' },
+    { id: 'specialty_stores', label: 'Specialty Stores', icon: '🎯' }
   ];
 
   const frequencies = [
@@ -134,30 +134,42 @@ const Step14Shopping = () => {
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Do you buy in bulk?
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button
             onClick={() => handleChange('bulkBuying', true)}
             className={`p-4 rounded-xl border-2 transition-all ${
-              localData.bulkBuying
+              localData.bulkBuying === true
                 ? 'border-primary bg-primary/10'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="text-2xl mb-2">📦</div>
-            <div className="text-sm font-medium text-gray-800">Yes, I buy in bulk</div>
+            <div className="text-sm font-medium text-gray-800">Yes</div>
             <div className="text-xs text-gray-600">Save money on staples</div>
           </button>
           <button
             onClick={() => handleChange('bulkBuying', false)}
             className={`p-4 rounded-xl border-2 transition-all ${
-              !localData.bulkBuying
+              localData.bulkBuying === false
                 ? 'border-primary bg-primary/10'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="text-2xl mb-2">🥬</div>
-            <div className="text-sm font-medium text-gray-800">No, fresh only</div>
+            <div className="text-sm font-medium text-gray-800">No</div>
             <div className="text-xs text-gray-600">Prefer fresh ingredients</div>
+          </button>
+          <button
+            onClick={() => handleChange('bulkBuying', null)}
+            className={`p-4 rounded-xl border-2 transition-all ${
+              localData.bulkBuying === null
+                ? 'border-primary bg-primary/10'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="text-2xl mb-2">🤷</div>
+            <div className="text-sm font-medium text-gray-800">No preference</div>
+            <div className="text-xs text-gray-600">Either works</div>
           </button>
         </div>
       </div>

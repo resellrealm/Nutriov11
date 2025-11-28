@@ -29,7 +29,7 @@ import Step20Summary from './Step20Summary';
 
 // Services
 import { updateOnboardingProgress, completeOnboarding, calculateAllMetrics } from '../../services/userService';
-import { nextStep, previousStep, saveProgress, completeOnboarding as completeOnboardingRedux } from '../../store/onboardingSlice';
+import { nextStep, previousStep, saveProgress, completeOnboarding as completeOnboardingRedux, setStep, setEditingFromReview } from '../../store/onboardingSlice';
 import { setOnboardingComplete } from '../../store/authSlice';
 
 const OnboardingFlowV2 = () => {
@@ -42,6 +42,7 @@ const OnboardingFlowV2 = () => {
   const onboardingData = useSelector(state => state.onboarding);
   const userId = useSelector(state => state.auth.user?.id);
   const hasCompletedOnboarding = useSelector(state => state.auth.hasCompletedOnboarding);
+  const editingFromReview = useSelector(state => state.onboarding.editingFromReview);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -264,26 +265,42 @@ const OnboardingFlowV2 = () => {
 
             {currentStep === 1 && <div />}
 
+            {/* Back to Review Button (when editing from review) */}
+            {editingFromReview && currentStep !== totalSteps && stepValidation[currentStep] && (
+              <button
+                onClick={() => {
+                  dispatch(setEditingFromReview(false));
+                  dispatch(setStep(totalSteps));
+                }}
+                className="ml-auto px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center"
+              >
+                Back to Review
+                <ChevronRight size={20} className="ml-1" />
+              </button>
+            )}
+
             {/* Next/Complete Button */}
-            <button
-              onClick={handleNext}
-              disabled={!stepValidation[currentStep] || isSaving || isCompleting}
-              className="ml-auto px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isCompleting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Completing...
-                </>
-              ) : currentStep === totalSteps ? (
-                'Complete Setup'
-              ) : (
-                <>
-                  Next
-                  <ChevronRight size={20} className="ml-1" />
-                </>
-              )}
-            </button>
+            {(!editingFromReview || currentStep === totalSteps) && (
+              <button
+                onClick={handleNext}
+                disabled={!stepValidation[currentStep] || isSaving || isCompleting}
+                className={`${editingFromReview && currentStep !== totalSteps ? '' : 'ml-auto'} px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {isCompleting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Completing...
+                  </>
+                ) : currentStep === totalSteps ? (
+                  'Complete Setup'
+                ) : (
+                  <>
+                    Next
+                    <ChevronRight size={20} className="ml-1" />
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Skip/Optional Text for Optional Steps */}

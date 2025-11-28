@@ -25,7 +25,7 @@ const Step15MealTiming = () => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Meals per day: {localData.mealsPerDay}
+          Meals per day <span className="text-xs text-gray-500">(on average)</span>: {localData.mealsPerDay}
         </label>
         <input type="range" min="1" max="6" value={localData.mealsPerDay}
           onChange={(e) => handleChange('mealsPerDay', parseInt(e.target.value))}
@@ -34,7 +34,7 @@ const Step15MealTiming = () => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Snacks per day: {localData.snacksPerDay}
+          Snacks per day <span className="text-xs text-gray-500">(on average)</span>: {localData.snacksPerDay}
         </label>
         <input type="range" min="0" max="5" value={localData.snacksPerDay}
           onChange={(e) => handleChange('snacksPerDay', parseInt(e.target.value))}
@@ -44,7 +44,7 @@ const Step15MealTiming = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Coffee className="inline mr-1" size={14} /> Breakfast Time
+            <Coffee className="inline mr-1" size={14} /> Breakfast Time <span className="text-xs text-gray-500">(approx.)</span>
           </label>
           <input type="time" value={localData.breakfastTime}
             onChange={(e) => handleChange('breakfastTime', e.target.value)}
@@ -52,7 +52,7 @@ const Step15MealTiming = () => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Sun className="inline mr-1" size={14} /> Lunch Time
+            <Sun className="inline mr-1" size={14} /> Lunch Time <span className="text-xs text-gray-500">(approx.)</span>
           </label>
           <input type="time" value={localData.lunchTime}
             onChange={(e) => handleChange('lunchTime', e.target.value)}
@@ -60,7 +60,7 @@ const Step15MealTiming = () => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Moon className="inline mr-1" size={14} /> Dinner Time
+            <Moon className="inline mr-1" size={14} /> Dinner Time <span className="text-xs text-gray-500">(approx.)</span>
           </label>
           <input type="time" value={localData.dinnerTime}
             onChange={(e) => handleChange('dinnerTime', e.target.value)}

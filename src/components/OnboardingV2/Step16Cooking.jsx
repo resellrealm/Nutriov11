@@ -29,7 +29,7 @@ const Step16Cooking = () => {
 
   const equipment = [
     'blender', 'food_processor', 'mixer', 'rice_cooker',
-    'toaster', 'juicer', 'coffee_maker', 'pressure_cooker'
+    'toaster', 'juicer', 'coffee_maker', 'pressure_cooker', 'none_of_above'
   ];
 
   const toggleMethod = (method) => {
@@ -42,9 +42,22 @@ const Step16Cooking = () => {
   };
 
   const toggleEquipment = (equip) => {
-    const updatedEquipment = localData.kitchenEquipment.includes(equip)
-      ? localData.kitchenEquipment.filter(e => e !== equip)
-      : [...localData.kitchenEquipment, equip];
+    let updatedEquipment;
+
+    if (equip === 'none_of_above') {
+      // If clicking "None of the above", clear all others
+      updatedEquipment = localData.kitchenEquipment.includes('none_of_above')
+        ? []
+        : ['none_of_above'];
+    } else {
+      // If clicking any other equipment, remove "None of the above"
+      updatedEquipment = localData.kitchenEquipment
+        .filter(e => e !== 'none_of_above')
+        .includes(equip)
+        ? localData.kitchenEquipment.filter(e => e !== equip && e !== 'none_of_above')
+        : [...localData.kitchenEquipment.filter(e => e !== 'none_of_above'), equip];
+    }
+
     const newData = { ...localData, kitchenEquipment: updatedEquipment };
     setLocalData(newData);
     dispatch(setCookingHabits(newData));

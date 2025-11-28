@@ -21,9 +21,20 @@ const Step18Supplements = () => {
   ];
 
   const toggleSupplement = (suppId) => {
-    const newSupplements = supplements.includes(suppId)
-      ? supplements.filter(s => s !== suppId)
-      : [...supplements, suppId];
+    let newSupplements;
+
+    if (suppId === 'none') {
+      // If clicking "None", clear all others
+      newSupplements = supplements.includes('none') ? [] : ['none'];
+    } else {
+      // If clicking any other supplement, remove "None"
+      newSupplements = supplements
+        .filter(s => s !== 'none')
+        .includes(suppId)
+        ? supplements.filter(s => s !== suppId && s !== 'none')
+        : [...supplements.filter(s => s !== 'none'), suppId];
+    }
+
     dispatch(setSupplements(newSupplements));
   };
 

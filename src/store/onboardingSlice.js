@@ -119,12 +119,14 @@ const initialState = {
     waterReminders: { enabled: false, frequency: 'hourly' },
     groceryReminders: { enabled: false, dayOfWeek: 'sunday' },
     progressCheckIns: { enabled: false, frequency: 'weekly' },
-    recipeSuggestions: true,
-    achievements: true
+    recipeSuggestions: false,
+    achievements: false
   },
 
   // Screen 20: Summary & Confirmation (no data stored, just confirmation)
   summaryConfirmed: false,
+  termsAccepted: false,
+  editingFromReview: false, // Track if user is editing from review page
 
   // Validation state for each step
   stepValidation: {
@@ -411,8 +413,18 @@ const onboardingSlice = createSlice({
     // Screen 20: Summary Confirmation
     confirmSummary: (state) => {
       state.summaryConfirmed = true;
-      state.stepValidation[20] = true;
-      state.errors[20] = null;
+      state.stepValidation[20] = state.termsAccepted;
+      state.errors[20] = state.termsAccepted ? null : 'Please accept the terms and privacy policy';
+    },
+
+    setTermsAccepted: (state, action) => {
+      state.termsAccepted = action.payload;
+      state.stepValidation[20] = action.payload;
+      state.errors[20] = action.payload ? null : 'Please accept the terms and privacy policy';
+    },
+
+    setEditingFromReview: (state, action) => {
+      state.editingFromReview = action.payload;
     },
 
     // Save & Resume
@@ -462,6 +474,8 @@ export const {
   setSupplements,
   setNotifications,
   confirmSummary,
+  setTermsAccepted,
+  setEditingFromReview,
   saveProgress,
   loadProgress,
   completeOnboarding,

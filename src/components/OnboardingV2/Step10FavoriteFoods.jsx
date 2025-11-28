@@ -10,37 +10,38 @@ const Step10FavoriteFoods = () => {
   const error = useSelector(state => state.onboarding.errors[10]);
 
   const [activeCategory, setActiveCategory] = useState('proteins');
+  const [customInputs, setCustomInputs] = useState({});
 
   const foodCategories = {
     proteins: {
       label: 'Proteins',
       icon: '🍖',
       minRequired: 1,
-      items: ['chicken', 'beef', 'fish', 'tofu', 'pork', 'turkey', 'lamb', 'eggs', 'shrimp', 'salmon']
+      items: ['chicken', 'beef', 'fish', 'tofu', 'pork', 'turkey', 'lamb', 'eggs', 'shrimp', 'salmon', 'tuna', 'cod', 'duck', 'tempeh', 'seitan', 'beans', 'lentils', 'chickpeas', 'other']
     },
     vegetables: {
       label: 'Vegetables',
       icon: '🥬',
       minRequired: 5,
-      items: ['broccoli', 'spinach', 'carrots', 'tomatoes', 'peppers', 'onions', 'garlic', 'mushrooms', 'zucchini', 'cauliflower', 'lettuce', 'cucumber', 'asparagus', 'kale', 'celery']
+      items: ['broccoli', 'spinach', 'carrots', 'tomatoes', 'peppers', 'onions', 'garlic', 'mushrooms', 'zucchini', 'cauliflower', 'lettuce', 'cucumber', 'asparagus', 'kale', 'celery', 'green_beans', 'peas', 'corn', 'eggplant', 'brussels_sprouts', 'sweet_potato', 'cabbage', 'bok_choy', 'radish', 'beetroot', 'other']
     },
     fruits: {
       label: 'Fruits',
       icon: '🍎',
       minRequired: 3,
-      items: ['apples', 'bananas', 'berries', 'oranges', 'grapes', 'mango', 'pineapple', 'avocado', 'strawberries', 'blueberries', 'watermelon', 'peaches']
+      items: ['apples', 'bananas', 'berries', 'oranges', 'grapes', 'mango', 'pineapple', 'avocado', 'strawberries', 'blueberries', 'watermelon', 'peaches', 'pears', 'kiwi', 'papaya', 'cherries', 'plums', 'raspberries', 'blackberries', 'cantaloupe', 'grapefruit', 'lemon', 'lime', 'coconut', 'other']
     },
     grains: {
       label: 'Grains',
       icon: '🌾',
       minRequired: 0,
-      items: ['rice', 'pasta', 'bread', 'quinoa', 'oats', 'couscous', 'tortillas', 'barley']
+      items: ['rice', 'pasta', 'bread', 'quinoa', 'oats', 'couscous', 'tortillas', 'barley', 'buckwheat', 'millet', 'bulgur', 'farro', 'rye', 'noodles', 'crackers', 'cereal', 'other']
     },
     snacks: {
       label: 'Snacks',
       icon: '🍿',
       minRequired: 0,
-      items: ['nuts', 'yogurt', 'cheese', 'crackers', 'hummus', 'protein_bars', 'dark_chocolate', 'popcorn']
+      items: ['nuts', 'yogurt', 'cheese', 'crackers', 'hummus', 'protein_bars', 'dark_chocolate', 'popcorn', 'granola', 'trail_mix', 'pretzels', 'rice_cakes', 'energy_balls', 'dried_fruit', 'seeds', 'nut_butter', 'other']
     }
   };
 
@@ -51,6 +52,21 @@ const Step10FavoriteFoods = () => {
       : [...currentItems, item];
 
     dispatch(setFavoriteIngredients({ [category]: newItems }));
+  };
+
+  const handleCustomInput = (category, value) => {
+    if (value.trim()) {
+      const currentItems = favorites[category] || [];
+      const customItem = `custom_${value.trim().toLowerCase().replace(/\s+/g, '_')}`;
+
+      if (!currentItems.includes(customItem)) {
+        dispatch(setFavoriteIngredients({
+          [category]: [...currentItems, customItem]
+        }));
+      }
+
+      setCustomInputs({ ...customInputs, [category]: '' });
+    }
   };
 
   const getCategoryProgress = (category) => {
@@ -103,7 +119,7 @@ const Step10FavoriteFoods = () => {
 
       {/* Food Items */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {foodCategories[activeCategory].items.map((item) => (
+        {foodCategories[activeCategory].items.filter(item => item !== 'other').map((item) => (
           <button
             key={item}
             onClick={() => toggleItem(activeCategory, item)}
@@ -114,13 +130,57 @@ const Step10FavoriteFoods = () => {
             }`}
           >
             <div className="text-sm font-medium text-gray-800 capitalize">
-              {item.replace('_', ' ')}
+              {item.replace(/_/g, ' ')}
             </div>
             {(favorites[activeCategory] || []).includes(item) && (
               <Heart className="text-primary mx-auto mt-1" size={16} fill="currentColor" />
             )}
           </button>
         ))}
+      </div>
+
+      {/* Custom "Other" Input */}
+      <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Other {foodCategories[activeCategory].label} (custom):
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder={`Enter custom ${foodCategories[activeCategory].label.toLowerCase()}...`}
+            value={customInputs[activeCategory] || ''}
+            onChange={(e) => setCustomInputs({ ...customInputs, [activeCategory]: e.target.value })}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleCustomInput(activeCategory, e.target.value);
+              }
+            }}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+          <button
+            onClick={() => handleCustomInput(activeCategory, customInputs[activeCategory])}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+          >
+            Add
+          </button>
+        </div>
+
+        {/* Display custom items */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(favorites[activeCategory] || [])
+            .filter(item => item.startsWith('custom_'))
+            .map((item) => (
+              <div key={item} className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary rounded-full text-sm">
+                <span className="capitalize">{item.replace('custom_', '').replace(/_/g, ' ')}</span>
+                <button
+                  onClick={() => toggleItem(activeCategory, item)}
+                  className="text-primary hover:text-primary-dark"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+        </div>
       </div>
 
       {error && (
