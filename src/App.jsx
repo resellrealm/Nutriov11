@@ -56,6 +56,9 @@ const AuthRequiredRoute = ({ children }) => {
   return children;
 };
 
+// Loading screen safety timeout - Total duration: 5 seconds + buffer
+const LOADING_TIMEOUT = 6000; // 5 seconds (loading) + 300ms (completion delay) + 700ms (safety buffer)
+
 // Inner app component that can use hooks
 function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
@@ -89,8 +92,8 @@ function AppContent() {
     }
 
     // Safety timeout so we NEVER get stuck on loader
-    // LoadingScreen takes 6 seconds (10% every 600ms) + 300ms delay = ~6.3s
-    const timeout = setTimeout(() => setIsLoading(false), 7000);
+    // LoadingScreen takes 5 seconds (10% every 500ms) + 300ms delay = ~5.3s
+    const timeout = setTimeout(() => setIsLoading(false), LOADING_TIMEOUT);
     return () => clearTimeout(timeout);
   }, [dispatch]);
 
