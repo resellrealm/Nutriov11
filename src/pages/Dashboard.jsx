@@ -14,6 +14,11 @@ import {
 import { getUserProfile } from '../services/userService';
 import { getDailyTotals, getWeeklySummary } from '../services/foodLogService';
 import { getMealOfTheDay } from '../services/recipeService';
+import {
+  getPersonalizedMealOfTheDay,
+  getFoodSuggestionsForDeficiencies,
+  generateNutritionInsights
+} from '../services/smartRecommendationService';
 import toast from 'react-hot-toast';
 
 // Motivational quotes based on user goals
@@ -73,6 +78,11 @@ const Dashboard = () => {
   const [macroData, setMacroData] = useState([]);
   const [mealTypeData, setMealTypeData] = useState([]);
   const [recommendedMeal, setRecommendedMeal] = useState(null);
+  const [mealReasons, setMealReasons] = useState([]);
+
+  // Smart recommendations
+  const [nutritionInsights, setNutritionInsights] = useState([]);
+  const [foodSuggestions, setFoodSuggestions] = useState([]);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -91,10 +101,6 @@ const Dashboard = () => {
       const goal = profile.goals?.primary || 'default';
       setQuoteOfDay(getQuoteByGoal(goal));
 
-      // Get meal of the day
-      const todaysMeal = getMealOfTheDay();
-      setRecommendedMeal(todaysMeal);
-
       // Fetch today's food log
       const today = new Date().toISOString().split('T')[0];
       const todayResult = await getDailyTotals(userId, today);
@@ -108,6 +114,20 @@ const Dashboard = () => {
         setWeeklyData(weeklyResult.data);
         processWeeklyData(weeklyResult.data, profile);
       }
+
+      // Get personalized meal recommendation based on today's intake
+      const todayIntake = todayResult?.data?.totals || {};
+      const mealRecommendation = getPersonalizedMealOfTheDay(todayIntake, profile);
+      setRecommendedMeal(mealRecommendation.meal);
+      setMealReasons(mealRecommendation.reasons || []);
+
+      // Generate nutrition insights
+      const insights = generateNutritionInsights(mealRecommendation.analysis, goal);
+      setNutritionInsights(insights);
+
+      // Get food suggestions for deficiencies
+      const suggestions = getFoodSuggestionsForDeficiencies(mealRecommendation.analysis);
+      setFoodSuggestions(suggestions);
 
     } catch (err) {
       setError(err.message);
@@ -377,6 +397,22 @@ const Dashboard = () => {
                   </span>
                 ))}
               </div>
+              {/* Why this meal? */}
+              {mealReasons.length > 0 && (
+                <div className="mt-4 bg-white/60 dark:bg-gray-800/60 rounded-lg p-3">
+                  <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                    💡 Why this meal?
+                  </h5>
+                  <ul className="space-y-1">
+                    {mealReasons.map((reason, index) => (
+                      <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-start">
+                        <span className="text-primary mr-2">•</span>
+                        <span>{reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -386,6 +422,99 @@ const Dashboard = () => {
             >
               Plan Your Meals
             </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Nutrition Insights */}
+      {nutritionInsights.length > 0 && (
+        <motion.div
+          className="space-y-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.18 }}
+        >
+          {nutritionInsights.map((insight, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-xl border ${
+                insight.type === 'success'
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                  : insight.type === 'warning'
+                  ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                  : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+              }`}
+            >
+              <div className="flex items-start space-x-3">
+                <span className="text-2xl">{insight.icon}</span>
+                <p className={`text-sm font-medium ${
+                  insight.type === 'success'
+                    ? 'text-green-800 dark:text-green-300'
+                    : insight.type === 'warning'
+                    ? 'text-amber-800 dark:text-amber-300'
+                    : 'text-blue-800 dark:text-blue-300'
+                }`}>
+                  {insight.message}
+                </p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Food Suggestions for Missing Nutrients */}
+      {foodSuggestions.length > 0 && (
+        <motion.div
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-card p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.19 }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Apple className="text-primary" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Foods to Add Today
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Add these foods to reach your nutrient goals:
+          </p>
+          <div className="space-y-4">
+            {foodSuggestions.map((suggestion, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white capitalize">
+                      {suggestion.nutrient}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                      {suggestion.remaining} remaining ({suggestion.percentage}% of goal)
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {suggestion.foods.map((food, foodIndex) => (
+                    <div
+                      key={foodIndex}
+                      className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3"
+                    >
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {food.food}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        {food.amount}
+                      </p>
+                      <p className="text-xs text-primary font-semibold mt-1">
+                        {food.provides}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       )}
