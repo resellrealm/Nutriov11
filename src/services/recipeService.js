@@ -2,6 +2,7 @@ import { db, isFirebaseFullyInitialized } from '../config/firebase';
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   addDoc,
   updateDoc,
@@ -1301,6 +1302,171 @@ export const getAllUserAndBuiltInRecipes = async (userId) => {
   }
 };
 
+/**
+ * Save a meal from food log as a recipe
+ */
+export const saveMealAsRecipe = async (userId, mealData) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  try {
+    const recipeData = {
+      name: mealData.name || mealData.food?.name || 'Saved Meal',
+      description: mealData.description || `Meal saved from ${mealData.date}`,
+      image: mealData.image || null,
+      mealType: mealData.mealType || 'lunch',
+      source: 'analyzed',
+
+      // Nutrition from meal
+      calories: mealData.food?.nutrition?.calories || null,
+      protein: mealData.food?.nutrition?.protein || null,
+      carbs: mealData.food?.nutrition?.carbs || null,
+      fat: mealData.food?.nutrition?.fat || null,
+      fiber: mealData.food?.nutrition?.fiber || null,
+
+      // Extract ingredients from analysis if available
+      ingredients: mealData.ingredients || [],
+      instructions: mealData.preparationMethod || '',
+      cookTime: mealData.cookTime || '30 min',
+      difficulty: 'Medium',
+
+      tags: ['analyzed', 'favorite'],
+      timesCooked: 1,
+      lastCooked: mealData.date || new Date().toISOString().split('T')[0],
+      rating: 0
+    };
+
+    return await saveUserRecipe(userId, recipeData);
+  } catch (error) {
+    console.error('Error saving meal as recipe:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+/**
+ * Mark recipe as cooked (increment counter and update last cooked date)
+ */
+export const markRecipeCooked = async (userId, recipeId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  try {
+    const recipeRef = doc(db, 'users', userId, 'recipes', recipeId);
+    const recipeSnap = await getDoc(recipeRef);
+
+    if (!recipeSnap.exists()) {
+      return {
+        success: false,
+        error: 'Recipe not found'
+      };
+    }
+
+    const currentTimesCooked = recipeSnap.data().timesCooked || 0;
+
+    await updateDoc(recipeRef, {
+      timesCooked: currentTimesCooked + 1,
+      lastCooked: new Date().toISOString().split('T')[0],
+      updatedAt: serverTimestamp()
+    });
+
+    return {
+      success: true,
+      message: 'Recipe marked as cooked'
+    };
+  } catch (error) {
+    console.error('Error marking recipe as cooked:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+/**
+ * Update recipe rating
+ */
+export const rateRecipe = async (userId, recipeId, rating) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  try {
+    if (rating < 0 || rating > 5) {
+      return {
+        success: false,
+        error: 'Rating must be between 0 and 5'
+      };
+    }
+
+    const recipeRef = doc(db, 'users', userId, 'recipes', recipeId);
+
+    await updateDoc(recipeRef, {
+      rating,
+      updatedAt: serverTimestamp()
+    });
+
+    return {
+      success: true,
+      message: 'Recipe rated successfully'
+    };
+  } catch (error) {
+    console.error('Error rating recipe:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+/**
+ * Get recipe stats
+ */
+export const getRecipeStats = async (userId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  try {
+    const recipesResult = await getUserRecipes(userId);
+
+    if (!recipesResult.success) {
+      return recipesResult;
+    }
+
+    const recipes = recipesResult.data;
+
+    const stats = {
+      totalRecipes: recipes.length,
+      byMealType: {
+        breakfast: recipes.filter(r => r.mealType === 'breakfast').length,
+        lunch: recipes.filter(r => r.mealType === 'lunch').length,
+        dinner: recipes.filter(r => r.mealType === 'dinner').length,
+        snack: recipes.filter(r => r.mealType === 'snack').length
+      },
+      bySource: {
+        manual: recipes.filter(r => r.source === 'manual').length,
+        analyzed: recipes.filter(r => r.source === 'analyzed').length,
+        cookbook: recipes.filter(r => r.source === 'cookbook').length,
+        online: recipes.filter(r => r.source === 'online').length
+      },
+      mostCooked: recipes.sort((a, b) => (b.timesCooked || 0) - (a.timesCooked || 0)).slice(0, 5),
+      highestRated: recipes.filter(r => r.rating > 0).sort((a, b) => b.rating - a.rating).slice(0, 5)
+    };
+
+    return {
+      success: true,
+      data: stats
+    };
+  } catch (error) {
+    console.error('Error getting recipe stats:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 export default {
   getAllRecipes,
   getRecipeById,
@@ -1314,5 +1480,9 @@ export default {
   updateUserRecipe,
   deleteUserRecipe,
   getAllUserAndBuiltInRecipes,
+  saveMealAsRecipe,
+  markRecipeCooked,
+  rateRecipe,
+  getRecipeStats,
   BUILT_IN_RECIPES
 };

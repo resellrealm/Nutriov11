@@ -24,6 +24,7 @@ const MealPlanner = lazy(() => import('./pages/MealPlanner'));
 const Goals = lazy(() => import('./pages/Goals'));
 const Favourites = lazy(() => import('./pages/Favourites'));
 const Achievements = lazy(() => import('./pages/Achievements'));
+const Analytics = lazy(() => import('./pages/Analytics'));
 const History = lazy(() => import('./pages/History'));
 const Account = lazy(() => import('./pages/Account'));
 const GroceryList = lazy(() => import('./pages/GroceryList'));
@@ -180,6 +181,7 @@ function AppContent() {
                   <Route path="goals" element={<Goals />} />
                   <Route path="favourites" element={<Favourites />} />
                   <Route path="achievements" element={<Achievements />} />
+                  <Route path="analytics" element={<Analytics />} />
                   <Route path="history" element={<History />} />
                   <Route path="account" element={<Account />} />
                 </Route>

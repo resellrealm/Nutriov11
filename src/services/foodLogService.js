@@ -312,6 +312,87 @@ export const getWeeklySummary = async (userId) => {
   }
 };
 
+/**
+ * Export food log data to CSV format
+ * @param {string} userId - User ID
+ * @param {string} startDate - Start date (YYYY-MM-DD)
+ * @param {string} endDate - End date (YYYY-MM-DD)
+ * @returns {Promise<Object>} Result with CSV data
+ */
+export const exportToCSV = async (userId, startDate, endDate) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  try {
+    // Get data for date range
+    const result = await getFoodLogByDateRange(userId, startDate, endDate);
+
+    if (!result.success || !result.data || result.data.length === 0) {
+      return {
+        success: false,
+        error: 'No data found for the selected period'
+      };
+    }
+
+    // Create CSV header
+    const headers = [
+      'Date',
+      'Meal Type',
+      'Food Name',
+      'Brand',
+      'Servings',
+      'Calories',
+      'Protein (g)',
+      'Carbs (g)',
+      'Fat (g)',
+      'Fiber (g)',
+      'Source'
+    ];
+
+    // Create CSV rows
+    const rows = result.data.map(entry => {
+      const nutrition = entry.food?.nutrition || {};
+      const servings = entry.food?.servingsConsumed || 1;
+
+      return [
+        entry.date,
+        entry.mealType || '',
+        entry.food?.name || '',
+        entry.food?.brand || '',
+        servings,
+        (nutrition.calories || 0) * servings,
+        (nutrition.protein || 0) * servings,
+        (nutrition.carbs || 0) * servings,
+        (nutrition.fat || 0) * servings,
+        (nutrition.fiber || 0) * servings,
+        entry.source || ''
+      ];
+    });
+
+    // Convert to CSV format
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => {
+        // Escape cells that contain commas
+        if (typeof cell === 'string' && cell.includes(',')) {
+          return `"${cell}"`;
+        }
+        return cell;
+      }).join(','))
+    ].join('\n');
+
+    return {
+      success: true,
+      csv: csvContent,
+      rowCount: rows.length
+    };
+  } catch (error) {
+    console.error('Error exporting to CSV:', error);
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
+  }
+};
+
 export default {
   logFoodItem,
   getFoodLogByDate,
@@ -319,5 +400,6 @@ export default {
   getDailyTotals,
   updateFoodLogEntry,
   deleteFoodLogEntry,
-  getWeeklySummary
+  getWeeklySummary,
+  exportToCSV
 };
