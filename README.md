@@ -39,9 +39,15 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 
 ### Food Logging
 - **Multiple Input Methods**:
-  - Barcode scanning (with Open Food Facts integration)
-  - Photo analysis (AI-powered via OpenAI)
+  - Barcode scanning (with Open Food Facts API v2 integration)
+  - Photo analysis (AI-powered via Google Gemini)
   - Manual entry
+- **AI-Powered Meal Analysis**:
+  - Google Gemini AI for meal photo recognition and nutrition estimation
+  - Confidence scoring and portion size detection
+  - Ingredient identification with calorie breakdown
+  - Smart meal type detection (breakfast, lunch, dinner, snack)
+  - Health scoring and personalized suggestions
 - **Meal Type Categorization**: Breakfast, lunch, dinner, snacks
 - **Nutritional Tracking**: Calories, protein, carbs, fat, fiber, sugar, sodium
 - **Daily & Weekly Summaries**: Aggregated nutrition data
@@ -53,6 +59,13 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 - **Match Scores**: See which recipes match your available ingredients
 - **Difficulty Levels**: Easy, Medium, Hard cooking options
 - **Meal Type Selection**: Filter by breakfast, lunch, dinner, snack
+
+### AI Image Services (ModelsLab)
+- **Food Image Analysis**: Detect food items from images with portion estimates
+- **Recipe Image Generation**: AI-generated professional food photography for recipes
+- **Background Removal**: Clean product shots with automatic background removal
+- **Image Upscaling**: Enhance image quality with 2x-4x upscaling
+- **Batch Processing**: Generate images for multiple recipes at once
 
 ### Additional Features
 - **Grocery List Generation**: Auto-generate shopping lists based on meal plans
@@ -74,6 +87,10 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 - **Styling**: TailwindCSS
 - **State Management**: Redux Toolkit
 - **Backend**: Firebase (Auth, Firestore)
+- **AI Services**:
+  - Google Gemini AI (meal photo analysis)
+  - ModelsLab AI (image generation & processing)
+- **APIs**: Open Food Facts v2 (barcode scanning)
 - **Animations**: Framer Motion
 - **Charts**: Recharts
 - **Mobile**: Capacitor (iOS support)
@@ -110,7 +127,11 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 For AI-powered meal analysis, add:
 ```env
-VITE_OPENAI_API_KEY=your_openai_api_key
+# Google Gemini AI (FREE - get key from https://makersuite.google.com/app/apikey)
+VITE_GEMINI_API_KEY=your_gemini_api_key
+
+# ModelsLab AI (Optional - for image generation & processing)
+VITE_MODELSLAB_API_KEY=your_modelslab_api_key
 ```
 
 ## Build
@@ -148,12 +169,14 @@ src/
 │   ├── BarcodeScanner.jsx
 │   ├── Login.jsx
 │   └── Register.jsx
-├── services/         # Firestore services
+├── services/         # Firestore services & API integrations
 │   ├── userService.js
 │   ├── foodLogService.js
 │   ├── recipeService.js
 │   ├── groceryListService.js
 │   ├── authService.js
+│   ├── geminiService.js
+│   ├── modelsLabService.js
 │   └── openFoodFactsService.js
 ├── store/            # Redux store and slices
 │   ├── store.js
@@ -172,7 +195,9 @@ src/
 - **recipeService.js**: 62 built-in recipes, user custom recipes, meal of the day
 - **groceryListService.js**: Smart grocery list generation from recipes
 - **authService.js**: Firebase authentication wrapper
-- **openFoodFactsService.js**: Barcode product lookup
+- **geminiService.js**: Google Gemini AI for meal photo analysis and nutrition estimation
+- **modelsLabService.js**: ModelsLab AI for image analysis, generation, and processing
+- **openFoodFactsService.js**: Open Food Facts API v2 for barcode product lookup
 
 ## Available Scripts
 
@@ -187,9 +212,12 @@ src/
 11.0.0 - Complete nutrition tracking app with:
 - 62 built-in recipes for daily meal recommendations
 - 20-step comprehensive onboarding flow
+- **Google Gemini AI integration** for intelligent meal photo analysis
+- **ModelsLab AI integration** for image generation and processing
+- **Open Food Facts API v2** for enhanced barcode scanning
 - User custom recipe storage in Firestore
 - Dashboard with charts and progress tracking
-- Food logging via barcode, photo, or manual entry
+- Food logging via barcode, AI photo analysis, or manual entry
 - Grocery list generation
 - Achievements and goals tracking
 
