@@ -19,6 +19,7 @@ import {
   getFoodSuggestionsForDeficiencies,
   generateNutritionInsights
 } from '../services/smartRecommendationService';
+import { getUserGoals, calculateGoalProgress } from '../services/goalsService';
 import toast from 'react-hot-toast';
 
 // Motivational quotes based on user goals
@@ -84,6 +85,10 @@ const Dashboard = () => {
   const [nutritionInsights, setNutritionInsights] = useState([]);
   const [foodSuggestions, setFoodSuggestions] = useState([]);
 
+  // Goals
+  const [userGoals, setUserGoals] = useState(null);
+  const [goalProgress, setGoalProgress] = useState(null);
+
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -101,11 +106,23 @@ const Dashboard = () => {
       const goal = profile.goals?.primary || 'default';
       setQuoteOfDay(getQuoteByGoal(goal));
 
+      // Fetch user goals
+      const goalsResult = await getUserGoals(userId);
+      if (goalsResult.success && goalsResult.data) {
+        setUserGoals(goalsResult.data);
+      }
+
       // Fetch today's food log
       const today = new Date().toISOString().split('T')[0];
       const todayResult = await getDailyTotals(userId, today);
       if (todayResult.success) {
         setTodayData(todayResult.data);
+
+        // Calculate goal progress if we have goals
+        if (goalsResult.success && goalsResult.data) {
+          const progress = calculateGoalProgress(todayResult.data, goalsResult.data);
+          setGoalProgress(progress);
+        }
       }
 
       // Fetch weekly summary
@@ -350,6 +367,207 @@ const Dashboard = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        className="grid grid-cols-2 md:grid-cols-4 gap-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.12 }}
+      >
+        <button
+          onClick={() => navigate('/analyze')}
+          className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <Utensils className="w-6 h-6 text-primary" />
+            </div>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">Analyze Meal</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Photo or text</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigate('/barcode')}
+          className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
+              <PieChartIcon className="w-6 h-6 text-emerald-500" />
+            </div>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">Scan Barcode</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Quick logging</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigate('/goals')}
+          className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center mb-2">
+              <Target className="w-6 h-6 text-orange-500" />
+            </div>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">My Goals</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Track progress</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigate('/history')}
+          className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-2">
+              <Clock className="w-6 h-6 text-purple-500" />
+            </div>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">History</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">View logs</span>
+          </div>
+        </button>
+      </motion.div>
+
+      {/* Goal Progress Bars */}
+      {goalProgress && userGoals && (
+        <motion.div
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-card p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.14 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+              <Target className="mr-2 text-primary" size={20} />
+              Today's Goal Progress
+            </h3>
+            <button
+              onClick={() => navigate('/goals')}
+              className="text-sm text-primary hover:text-primary/80 font-medium"
+            >
+              View Details →
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {/* Calories */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Calories</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {goalProgress.calories.actual} / {goalProgress.calories.target} kcal
+                  <span className={`ml-2 ${
+                    goalProgress.calories.status === 'good' ? 'text-green-600' :
+                    goalProgress.calories.status === 'close' ? 'text-amber-600' :
+                    goalProgress.calories.status === 'over' ? 'text-orange-600' :
+                    'text-red-600'
+                  }`}>
+                    ({goalProgress.calories.percentage}%)
+                  </span>
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all ${
+                    goalProgress.calories.status === 'good' ? 'bg-green-500' :
+                    goalProgress.calories.status === 'close' ? 'bg-amber-500' :
+                    goalProgress.calories.status === 'over' ? 'bg-orange-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(goalProgress.calories.percentage, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Protein */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Protein</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {goalProgress.protein.actual} / {goalProgress.protein.target} g
+                  <span className={`ml-2 ${
+                    goalProgress.protein.status === 'good' ? 'text-green-600' :
+                    goalProgress.protein.status === 'close' ? 'text-amber-600' :
+                    goalProgress.protein.status === 'over' ? 'text-orange-600' :
+                    'text-red-600'
+                  }`}>
+                    ({goalProgress.protein.percentage}%)
+                  </span>
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all ${
+                    goalProgress.protein.status === 'good' ? 'bg-green-500' :
+                    goalProgress.protein.status === 'close' ? 'bg-amber-500' :
+                    goalProgress.protein.status === 'over' ? 'bg-orange-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(goalProgress.protein.percentage, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Carbs */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Carbs</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {goalProgress.carbs.actual} / {goalProgress.carbs.target} g
+                  <span className={`ml-2 ${
+                    goalProgress.carbs.status === 'good' ? 'text-green-600' :
+                    goalProgress.carbs.status === 'close' ? 'text-amber-600' :
+                    goalProgress.carbs.status === 'over' ? 'text-orange-600' :
+                    'text-red-600'
+                  }`}>
+                    ({goalProgress.carbs.percentage}%)
+                  </span>
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all ${
+                    goalProgress.carbs.status === 'good' ? 'bg-green-500' :
+                    goalProgress.carbs.status === 'close' ? 'bg-amber-500' :
+                    goalProgress.carbs.status === 'over' ? 'bg-orange-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(goalProgress.carbs.percentage, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Fats */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Fats</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {goalProgress.fat.actual} / {goalProgress.fat.target} g
+                  <span className={`ml-2 ${
+                    goalProgress.fat.status === 'good' ? 'text-green-600' :
+                    goalProgress.fat.status === 'close' ? 'text-amber-600' :
+                    goalProgress.fat.status === 'over' ? 'text-orange-600' :
+                    'text-red-600'
+                  }`}>
+                    ({goalProgress.fat.percentage}%)
+                  </span>
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all ${
+                    goalProgress.fat.status === 'good' ? 'bg-green-500' :
+                    goalProgress.fat.status === 'close' ? 'bg-amber-500' :
+                    goalProgress.fat.status === 'over' ? 'bg-orange-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(goalProgress.fat.percentage, 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Recommended Meal of the Day */}
       {recommendedMeal && (

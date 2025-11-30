@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -20,142 +21,264 @@ import {
   Info,
   Flame,
   Activity,
-  BarChart3
+  BarChart3,
+  Loader
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getUserProfile } from '../services/userService';
+import { getDailyTotals, getWeeklySummary } from '../services/foodLogService';
+import {
+  getUserGoals,
+  saveUserGoals,
+  calculateDefaultGoals,
+  calculateGoalProgress,
+  getWeeklyGoalAdherence
+} from '../services/goalsService';
 
 const Goals = () => {
-  const [timeInterval, setTimeInterval] = useState('daily'); // daily, weekly, custom
+  const userId = useSelector(state => state.auth.user?.id);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // User data
+  const [userProfile, setUserProfile] = useState(null);
+  const [todayData, setTodayData] = useState(null);
+  const [weeklyData, setWeeklyData] = useState(null);
+
+  // Goals
+  const [goals, setGoals] = useState(null);
+  const [progress, setProgress] = useState(null);
+  const [weeklyAdherence, setWeeklyAdherence] = useState(null);
+
+  // UI state
+  const [timeInterval, setTimeInterval] = useState('daily');
   const [showGoalModal, setShowGoalModal] = useState(false);
 
-  // Current intake (would come from backend)
-  const [currentIntake] = useState({
-    calories: 1650,
-    protein: 78,
-    carbs: 180,
-    fats: 55,
-    fiber: 22,
-    vitaminA: 650,
-    vitaminC: 75,
-    vitaminD: 12,
-    calcium: 800,
-    iron: 14,
-    water: 6
-  });
-
-  // Goal targets
-  const [goals, setGoals] = useState({
-    calories: { target: 2000, unit: 'kcal', enabled: true },
-    protein: { target: 120, unit: 'g', enabled: true },
-    carbs: { target: 250, unit: 'g', enabled: true },
-    fats: { target: 70, unit: 'g', enabled: true },
-    fiber: { target: 30, unit: 'g', enabled: true },
-    vitaminA: { target: 900, unit: 'μg', enabled: true },
-    vitaminC: { target: 90, unit: 'mg', enabled: true },
-    vitaminD: { target: 20, unit: 'μg', enabled: true },
-    calcium: { target: 1000, unit: 'mg', enabled: true },
-    iron: { target: 18, unit: 'mg', enabled: true },
-    water: { target: 8, unit: 'glasses', enabled: true }
-  });
-
-  // Calculate progress percentages
-  const calculateProgress = (current, target) => {
-    return Math.min(Math.round((current / target) * 100), 150);
-  };
-
-  // Get color based on progress
-  const getProgressColor = (progress) => {
-    if (progress >= 90 && progress <= 110) return '#10b981'; // Green - perfect
-    if (progress >= 70 && progress < 90) return '#f59e0b'; // Amber - close
-    if (progress > 110) return '#f59e0b'; // Amber - over
-    return '#ef4444'; // Red - far off
-  };
-
-  // Main macros for big display
-  const mainMacros = ['calories', 'protein', 'carbs', 'fats'];
-  
-  // Secondary nutrients
-  const secondaryNutrients = ['fiber', 'water'];
-  
-  // Vitamins and minerals
-  const micronutrients = ['vitaminA', 'vitaminC', 'vitaminD', 'calcium', 'iron'];
-
-  // Weekly progress data for charts
-  const [weeklyProgress] = useState([
-    { day: 'Mon', calories: 95, protein: 88, carbs: 92, fats: 98 },
-    { day: 'Tue', calories: 102, protein: 95, carbs: 98, fats: 105 },
-    { day: 'Wed', calories: 88, protein: 82, carbs: 85, fats: 90 },
-    { day: 'Thu', calories: 98, protein: 92, carbs: 95, fats: 100 },
-    { day: 'Fri', calories: 105, protein: 98, carbs: 102, fats: 95 },
-    { day: 'Sat', calories: 110, protein: 105, carbs: 108, fats: 98 },
-    { day: 'Sun', calories: 92, protein: 88, carbs: 90, fats: 85 }
-  ]);
-
-  // Monthly calorie trends
-  const [monthlyTrends] = useState([
-    { week: 'Week 1', target: 2000, actual: 1950, avgDiff: 50 },
-    { week: 'Week 2', target: 2000, actual: 2100, avgDiff: -100 },
-    { week: 'Week 3', target: 2000, actual: 1920, avgDiff: 80 },
-    { week: 'Week 4', target: 2000, actual: 2050, avgDiff: -50 }
-  ]);
-
-  // Statistics
-  const [stats] = useState({
-    currentStreak: 14,
-    longestStreak: 28,
-    totalDaysTracked: 127,
-    goalsMetToday: 3,
+  // Stats
+  const [stats, setStats] = useState({
+    currentStreak: 0,
+    longestStreak: 0,
+    totalDaysTracked: 0,
+    goalsMetToday: 0,
     totalGoals: 4,
-    weeklySuccessRate: 82,
-    monthlySuccessRate: 78,
-    avgCaloriesPerDay: 1950,
-    avgProteinPerDay: 112,
-    bestDay: 'Friday',
-    improvementAreas: ['Fiber', 'Vitamin D']
+    weeklySuccessRate: 0,
+    monthlySuccessRate: 0,
+    avgCaloriesPerDay: 0,
+    avgProteinPerDay: 0
   });
 
-  const handleSaveGoals = () => {
-    toast.success('Goals updated successfully!');
-    setShowGoalModal(false);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch user profile
+      const profileResult = await getUserProfile(userId);
+      if (!profileResult.success) {
+        throw new Error('Failed to load profile');
+      }
+      setUserProfile(profileResult.data);
 
-    // Check for achievements
-    checkAchievements();
-  };
+      // Fetch or create goals
+      const goalsResult = await getUserGoals(userId);
+      let userGoals;
 
-  const checkAchievements = () => {
-    // Check if all goals are met
-    const allGoalsMet = mainMacros.every(macro => {
-      const progress = calculateProgress(currentIntake[macro], goals[macro].target);
-      return progress >= 90 && progress <= 110;
-    });
-    
-    if (allGoalsMet) {
-      setTimeout(() => {
-        toast.success('🏆 Perfect Balance achieved! All macros on target!', {
-          duration: 5000
+      if (goalsResult.success && goalsResult.data) {
+        userGoals = goalsResult.data;
+      } else {
+        // Create default goals from profile
+        userGoals = calculateDefaultGoals(profileResult.data);
+      }
+      setGoals(userGoals);
+
+      // Fetch today's data
+      const today = new Date().toISOString().split('T')[0];
+      const todayResult = await getDailyTotals(userId, today);
+      if (todayResult.success) {
+        setTodayData(todayResult.data);
+
+        // Calculate progress
+        const todayProgress = calculateGoalProgress(todayResult.data, userGoals);
+        setProgress(todayProgress);
+
+        // Count goals met today
+        let goalsMet = 0;
+        if (todayProgress) {
+          if (todayProgress.calories?.status === 'good') goalsMet++;
+          if (todayProgress.protein?.status === 'good') goalsMet++;
+          if (todayProgress.carbs?.status === 'good') goalsMet++;
+          if (todayProgress.fat?.status === 'good') goalsMet++;
+        }
+        setStats(prev => ({ ...prev, goalsMetToday: goalsMet }));
+      }
+
+      // Fetch weekly summary
+      const weeklyResult = await getWeeklySummary(userId);
+      if (weeklyResult.success) {
+        setWeeklyData(weeklyResult.data);
+
+        // Calculate weekly adherence
+        const adherence = getWeeklyGoalAdherence(weeklyResult.data, userGoals);
+        setWeeklyAdherence(adherence);
+
+        // Calculate stats
+        const daysTracked = weeklyResult.data.totalDays || 0;
+        const totalEntries = weeklyResult.data.totalEntries || 0;
+
+        // Calculate streak
+        const sortedDates = Object.keys(weeklyResult.data.byDate || {}).sort().reverse();
+        let streak = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (let i = 0; i < sortedDates.length; i++) {
+          const dateObj = new Date(sortedDates[i]);
+          dateObj.setHours(0, 0, 0, 0);
+          const expectedDate = new Date(today);
+          expectedDate.setDate(today.getDate() - i);
+          expectedDate.setHours(0, 0, 0, 0);
+
+          if (dateObj.getTime() === expectedDate.getTime()) {
+            streak++;
+          } else {
+            break;
+          }
+        }
+
+        // Calculate averages
+        const dailyTotalsArray = Object.values(weeklyResult.data.dailyTotals || {});
+        const avgCalories = dailyTotalsArray.length > 0
+          ? Math.round(dailyTotalsArray.reduce((sum, day) => sum + (day.calories || 0), 0) / dailyTotalsArray.length)
+          : 0;
+        const avgProtein = dailyTotalsArray.length > 0
+          ? Math.round(dailyTotalsArray.reduce((sum, day) => sum + (day.protein || 0), 0) / dailyTotalsArray.length)
+          : 0;
+
+        // Calculate success rates
+        const weeklySuccess = adherence?.adherence?.allMacros?.percentage || 0;
+
+        setStats({
+          currentStreak: streak,
+          longestStreak: streak, // This would need historical data
+          totalDaysTracked: daysTracked,
+          goalsMetToday: stats.goalsMetToday,
+          totalGoals: 4,
+          weeklySuccessRate: weeklySuccess,
+          monthlySuccessRate: weeklySuccess, // Would need monthly data
+          avgCaloriesPerDay: avgCalories,
+          avgProteinPerDay: avgProtein
         });
-      }, 1000);
+      }
+    } catch (error) {
+      console.error('Error fetching goals data:', error);
+      toast.error('Failed to load goals data');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchData();
+    }
+  }, [userId, fetchData]);
+
+  const handleSaveGoals = async (newGoals) => {
+    setSaving(true);
+    try {
+      const result = await saveUserGoals(userId, newGoals);
+      if (result.success) {
+        setGoals(newGoals);
+        toast.success('Goals saved successfully!');
+        setShowGoalModal(false);
+
+        // Recalculate progress with new goals
+        if (todayData) {
+          const newProgress = calculateGoalProgress(todayData, newGoals);
+          setProgress(newProgress);
+        }
+        if (weeklyData) {
+          const newAdherence = getWeeklyGoalAdherence(weeklyData, newGoals);
+          setWeeklyAdherence(newAdherence);
+        }
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Error saving goals:', error);
+      toast.error('Failed to save goals');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const MacroCard = ({ name, current, goal, unit, size = 'large' }) => {
-    const progress = calculateProgress(current, goal);
-    const color = getProgressColor(progress);
-    const displayName = name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1');
-    
+  // Calculate weekly chart data
+  const getWeeklyProgressData = () => {
+    if (!weeklyData || !weeklyData.dailyTotals || !goals) {
+      return [];
+    }
+
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const today = new Date();
+    const last7Days = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      last7Days.push(date.toISOString().split('T')[0]);
+    }
+
+    return last7Days.map((dateStr, index) => {
+      const dayData = weeklyData.dailyTotals[dateStr];
+      const dayName = days[new Date(dateStr).getDay() === 0 ? 6 : new Date(dateStr).getDay() - 1];
+
+      if (!dayData) {
+        return {
+          day: dayName,
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fats: 0
+        };
+      }
+
+      return {
+        day: dayName,
+        calories: Math.round((dayData.calories / goals.calories) * 100),
+        protein: Math.round((dayData.protein / goals.protein) * 100),
+        carbs: Math.round((dayData.carbs / goals.carbs) * 100),
+        fats: Math.round((dayData.fat / goals.fat) * 100)
+      };
+    });
+  };
+
+  // Get color based on progress
+  const getProgressColor = (percentage) => {
+    if (percentage >= 90 && percentage <= 110) return '#10b981'; // Green - perfect
+    if (percentage >= 70 && percentage < 90) return '#f59e0b'; // Amber - close
+    if (percentage > 110) return '#f59e0b'; // Amber - over
+    return '#ef4444'; // Red - far off
+  };
+
+  const MacroCard = ({ name, progressData, size = 'large' }) => {
+    if (!progressData) return null;
+
+    const { actual, target, percentage, status } = progressData;
+    const color = getProgressColor(percentage);
+    const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+    const unit = name === 'calories' ? 'kcal' : 'g';
+
     if (size === 'large') {
       return (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           whileHover={{ scale: 1.02 }}
-          className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6"
         >
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">{displayName}</h3>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 text-center">{displayName}</h3>
           <div className="w-40 h-40 mx-auto">
             <CircularProgressbar
-              value={progress}
-              text={`${progress}%`}
+              value={Math.min(percentage, 150)}
+              text={`${percentage}%`}
               styles={buildStyles({
                 textColor: color,
                 pathColor: color,
@@ -166,36 +289,37 @@ const Goals = () => {
             />
           </div>
           <div className="mt-4 text-center">
-            <p className="text-2xl font-bold text-gray-800">
-              {current} <span className="text-sm text-gray-500">/ {goal} {unit}</span>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {actual} <span className="text-sm text-gray-500">/ {target} {unit}</span>
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              {progress >= 90 && progress <= 110 && '✅ On target!'}
-              {progress < 90 && `${goal - current} ${unit} to go`}
-              {progress > 110 && '⚠️ Over target'}
+              {status === 'good' && '✅ On target!'}
+              {status === 'close' && `${target - actual} ${unit} to go`}
+              {status === 'under' && `${target - actual} ${unit} to go`}
+              {status === 'over' && '⚠️ Over target'}
             </p>
           </div>
         </motion.div>
       );
     }
-    
+
     return (
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all"
+        className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all"
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <h4 className="text-sm font-medium text-gray-700">{displayName}</h4>
-            <p className="text-lg font-semibold text-gray-900 mt-1">
-              {current} <span className="text-xs text-gray-500">/ {goal} {unit}</span>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">{displayName}</h4>
+            <p className="text-lg font-semibold text-gray-900 dark:text-white mt-1">
+              {actual} <span className="text-xs text-gray-500">/ {target} {unit}</span>
             </p>
           </div>
           <div className="w-16 h-16">
             <CircularProgressbar
-              value={progress}
-              text={`${progress}%`}
+              value={Math.min(percentage, 150)}
+              text={`${percentage}%`}
               styles={buildStyles({
                 textColor: color,
                 pathColor: color,
@@ -211,7 +335,15 @@ const Goals = () => {
 
   const GoalSettingsModal = () => {
     const [tempGoals, setTempGoals] = useState(goals);
-    
+
+    useEffect(() => {
+      if (goals) {
+        setTempGoals({ ...goals });
+      }
+    }, [goals]);
+
+    if (!tempGoals) return null;
+
     return (
       <AnimatePresence>
         {showGoalModal && (
@@ -227,111 +359,119 @@ const Goals = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
             >
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
+              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 z-10">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">Set Your Goals</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Set Your Goals</h2>
                   <button
                     onClick={() => setShowGoalModal(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   >
                     <X size={20} />
                   </button>
                 </div>
               </div>
-              
+
               <div className="p-6">
-                <div className="mb-6">
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Time Interval</label>
-                  <div className="flex space-x-2">
-                    {['daily', 'weekly', 'custom'].map((interval) => (
-                      <button
-                        key={interval}
-                        onClick={() => setTimeInterval(interval)}
-                        className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                          timeInterval === interval
-                            ? 'bg-gradient-to-r from-primary to-accent text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {interval.charAt(0).toUpperCase() + interval.slice(1)}
-                      </button>
-                    ))}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Daily Nutrition Goals</h3>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-gray-700 dark:text-gray-300 font-medium">Calories</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={tempGoals.calories || ''}
+                            onChange={(e) => setTempGoals({ ...tempGoals, calories: parseInt(e.target.value) || 0 })}
+                            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <span className="w-12 text-gray-500 text-sm">kcal</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <label className="text-gray-700 dark:text-gray-300 font-medium">Protein</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={tempGoals.protein || ''}
+                            onChange={(e) => setTempGoals({ ...tempGoals, protein: parseInt(e.target.value) || 0 })}
+                            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <span className="w-12 text-gray-500 text-sm">g</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <label className="text-gray-700 dark:text-gray-300 font-medium">Carbs</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={tempGoals.carbs || ''}
+                            onChange={(e) => setTempGoals({ ...tempGoals, carbs: parseInt(e.target.value) || 0 })}
+                            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <span className="w-12 text-gray-500 text-sm">g</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <label className="text-gray-700 dark:text-gray-300 font-medium">Fat</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={tempGoals.fat || ''}
+                            onChange={(e) => setTempGoals({ ...tempGoals, fat: parseInt(e.target.value) || 0 })}
+                            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <span className="w-12 text-gray-500 text-sm">g</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <label className="text-gray-700 dark:text-gray-300 font-medium">Fiber</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={tempGoals.fiber || 25}
+                            onChange={(e) => setTempGoals({ ...tempGoals, fiber: parseInt(e.target.value) || 0 })}
+                            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <span className="w-12 text-gray-500 text-sm">g</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <label className="text-gray-700 dark:text-gray-300 font-medium">Water</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={tempGoals.water || 8}
+                            onChange={(e) => setTempGoals({ ...tempGoals, water: parseInt(e.target.value) || 0 })}
+                            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <span className="w-12 text-gray-500 text-sm">glasses</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-800">Main Macronutrients</h3>
-                  {mainMacros.map((macro) => (
-                    <div key={macro} className="flex items-center space-x-4">
-                      <input
-                        type="checkbox"
-                        checked={tempGoals[macro].enabled}
-                        onChange={(e) => setTempGoals({
-                          ...tempGoals,
-                          [macro]: { ...tempGoals[macro], enabled: e.target.checked }
-                        })}
-                        className="w-5 h-5 text-primary rounded"
-                      />
-                      <label className="flex-1 text-gray-700 capitalize">{macro}</label>
-                      <input
-                        type="number"
-                        value={tempGoals[macro].target}
-                        onChange={(e) => setTempGoals({
-                          ...tempGoals,
-                          [macro]: { ...tempGoals[macro], target: parseInt(e.target.value) || 0 }
-                        })}
-                        disabled={!tempGoals[macro].enabled}
-                        className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
-                      />
-                      <span className="w-12 text-gray-500 text-sm">{tempGoals[macro].unit}</span>
-                    </div>
-                  ))}
-                  
-                  <h3 className="font-semibold text-gray-800 pt-4">Other Nutrients</h3>
-                  {[...secondaryNutrients, ...micronutrients].map((nutrient) => (
-                    <div key={nutrient} className="flex items-center space-x-4">
-                      <input
-                        type="checkbox"
-                        checked={tempGoals[nutrient].enabled}
-                        onChange={(e) => setTempGoals({
-                          ...tempGoals,
-                          [nutrient]: { ...tempGoals[nutrient], enabled: e.target.checked }
-                        })}
-                        className="w-5 h-5 text-primary rounded"
-                      />
-                      <label className="flex-1 text-gray-700">
-                        {nutrient.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                      </label>
-                      <input
-                        type="number"
-                        value={tempGoals[nutrient].target}
-                        onChange={(e) => setTempGoals({
-                          ...tempGoals,
-                          [nutrient]: { ...tempGoals[nutrient], target: parseInt(e.target.value) || 0 }
-                        })}
-                        disabled={!tempGoals[nutrient].enabled}
-                        className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
-                      />
-                      <span className="w-12 text-gray-500 text-sm">{tempGoals[nutrient].unit}</span>
-                    </div>
-                  ))}
-                </div>
-                
+
                 <div className="flex space-x-3 mt-8">
                   <button
-                    onClick={() => {
-                      setGoals(tempGoals);
-                      handleSaveGoals();
-                    }}
-                    className="flex-1 bg-gradient-to-r from-primary to-accent text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                    onClick={() => handleSaveGoals(tempGoals)}
+                    disabled={saving}
+                    className="flex-1 bg-gradient-to-r from-primary to-accent text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Save Goals
+                    {saving ? 'Saving...' : 'Save Goals'}
                   </button>
                   <button
                     onClick={() => setShowGoalModal(false)}
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                    disabled={saving}
+                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   >
                     Cancel
                   </button>
@@ -344,17 +484,41 @@ const Goals = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading your goals...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!goals) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <Target className="w-12 h-12 text-primary mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Failed to load goals</p>
+        </div>
+      </div>
+    );
+  }
+
+  const weeklyProgressData = getWeeklyProgressData();
+
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto pb-8">
       {/* Header */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
               <Target className="mr-3 text-primary" size={32} />
               Your Goals
             </h1>
-            <p className="text-gray-600 mt-2">Track your nutrition goals and stay on target</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Track your nutrition goals and stay on target</p>
           </div>
           <div className="flex space-x-3 mt-4 sm:mt-0">
             <button
@@ -368,84 +532,29 @@ const Goals = () => {
         </div>
       </div>
 
-      {/* Time Interval Selector */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Clock size={20} className="text-gray-600" />
-            <span className="text-gray-700 font-medium">Tracking Period:</span>
-          </div>
-          <div className="flex space-x-2">
-            {['daily', 'weekly'].map((interval) => (
-              <button
-                key={interval}
-                onClick={() => setTimeInterval(interval)}
-                className={`px-4 py-1 rounded-lg text-sm font-medium transition-all ${
-                  timeInterval === interval
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {interval.charAt(0).toUpperCase() + interval.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Main Macros Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {mainMacros.map((macro) => (
-          <MacroCard
-            key={macro}
-            name={macro}
-            current={currentIntake[macro]}
-            goal={goals[macro].target}
-            unit={goals[macro].unit}
-            size="large"
-          />
-        ))}
-      </div>
+      {progress && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <MacroCard name="calories" progressData={progress.calories} size="large" />
+          <MacroCard name="protein" progressData={progress.protein} size="large" />
+          <MacroCard name="carbs" progressData={progress.carbs} size="large" />
+          <MacroCard name="fat" progressData={progress.fat} size="large" />
+        </div>
+      )}
 
       {/* Secondary Nutrients */}
-      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-          <Zap className="mr-2 text-accent" size={20} />
-          Other Nutrients
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {secondaryNutrients.map((nutrient) => (
-            <MacroCard
-              key={nutrient}
-              name={nutrient}
-              current={currentIntake[nutrient]}
-              goal={goals[nutrient].target}
-              unit={goals[nutrient].unit}
-              size="small"
-            />
-          ))}
+      {progress && progress.fiber && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+            <Zap className="mr-2 text-accent" size={20} />
+            Other Nutrients
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MacroCard name="fiber" progressData={progress.fiber} size="small" />
+            {progress.water && <MacroCard name="water" progressData={progress.water} size="small" />}
+          </div>
         </div>
-      </div>
-
-      {/* Vitamins & Minerals */}
-      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-          <Award className="mr-2 text-orange-500" size={20} />
-          Vitamins & Minerals
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {micronutrients.map((nutrient) => (
-            <MacroCard
-              key={nutrient}
-              name={nutrient}
-              current={currentIntake[nutrient]}
-              goal={goals[nutrient].target}
-              unit={goals[nutrient].unit}
-              size="small"
-            />
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Statistics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -459,7 +568,7 @@ const Goals = () => {
             <Flame size={20} />
           </div>
           <p className="text-3xl font-bold">{stats.currentStreak} days</p>
-          <p className="text-xs opacity-75 mt-1">Longest: {stats.longestStreak} days</p>
+          <p className="text-xs opacity-75 mt-1">Keep it going! 🔥</p>
         </motion.div>
 
         <motion.div
@@ -487,7 +596,7 @@ const Goals = () => {
             <TrendingUp size={20} />
           </div>
           <p className="text-3xl font-bold">{stats.weeklySuccessRate}%</p>
-          <p className="text-xs opacity-75 mt-1">Monthly: {stats.monthlySuccessRate}%</p>
+          <p className="text-xs opacity-75 mt-1">All macros on target</p>
         </motion.div>
 
         <motion.div
@@ -501,107 +610,90 @@ const Goals = () => {
             <Calendar size={20} />
           </div>
           <p className="text-3xl font-bold">{stats.totalDaysTracked}</p>
-          <p className="text-xs opacity-75 mt-1">Keep up the great work!</p>
+          <p className="text-xs opacity-75 mt-1">This week</p>
         </motion.div>
       </div>
 
       {/* Weekly Progress Chart */}
-      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-          <BarChart3 className="mr-2 text-primary" size={20} />
-          Weekly Goal Achievement (%)
-        </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={weeklyProgress}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="day" />
-            <YAxis domain={[0, 120]} />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="calories" fill="#10b981" name="Calories" />
-            <Bar dataKey="protein" fill="#3b82f6" name="Protein" />
-            <Bar dataKey="carbs" fill="#f59e0b" name="Carbs" />
-            <Bar dataKey="fats" fill="#8b5cf6" name="Fats" />
-          </BarChart>
-        </ResponsiveContainer>
-        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-600">
-          <Info size={16} />
-          <span>Target range: 90-110% of goal</span>
-        </div>
-      </div>
-
-      {/* Monthly Calorie Trends */}
-      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-          <Activity className="mr-2 text-accent" size={20} />
-          Monthly Calorie Trends
-        </h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <AreaChart data={monthlyTrends}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="week" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Area type="monotone" dataKey="target" stroke="#94a3b8" fill="#e2e8f0" name="Target" />
-            <Area type="monotone" dataKey="actual" stroke="#10b981" fill="#10b98120" name="Actual" />
-          </AreaChart>
-        </ResponsiveContainer>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Avg. Daily Calories</p>
-            <p className="text-xl font-bold text-gray-900">{stats.avgCaloriesPerDay}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Avg. Daily Protein</p>
-            <p className="text-xl font-bold text-gray-900">{stats.avgProteinPerDay}g</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Best Day</p>
-            <p className="text-xl font-bold text-emerald-600">{stats.bestDay}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Consistency</p>
-            <p className="text-xl font-bold text-blue-600">{stats.weeklySuccessRate}%</p>
+      {weeklyProgressData.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+            <BarChart3 className="mr-2 text-primary" size={20} />
+            Weekly Goal Achievement (%)
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={weeklyProgressData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis domain={[0, 120]} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="calories" fill="#10b981" name="Calories" />
+              <Bar dataKey="protein" fill="#3b82f6" name="Protein" />
+              <Bar dataKey="carbs" fill="#f59e0b" name="Carbs" />
+              <Bar dataKey="fats" fill="#8b5cf6" name="Fats" />
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <Info size={16} />
+            <span>Target range: 90-110% of goal</span>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Improvement Areas */}
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-          <TrendingUp className="mr-2 text-amber-600" size={20} />
-          Areas for Improvement
-        </h3>
-        <div className="space-y-2">
-          {stats.improvementAreas.map((area, index) => (
-            <div key={index} className="flex items-center justify-between bg-white rounded-lg p-3">
-              <div className="flex items-center">
-                <AlertCircle className="text-amber-500 mr-2" size={18} />
-                <span className="font-medium text-gray-800">{area}</span>
-              </div>
-              <span className="text-sm text-gray-600">Needs attention</span>
+      {/* Weekly Adherence Details */}
+      {weeklyAdherence && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+            <Activity className="mr-2 text-accent" size={20} />
+            Weekly Adherence
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Calories</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {weeklyAdherence.adherence.calories.daysMet}/{weeklyAdherence.daysTracked}
+              </p>
+              <p className="text-xs text-gray-500">{weeklyAdherence.adherence.calories.percentage}% success</p>
             </div>
-          ))}
+            <div className="text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Protein</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {weeklyAdherence.adherence.protein.daysMet}/{weeklyAdherence.daysTracked}
+              </p>
+              <p className="text-xs text-gray-500">{weeklyAdherence.adherence.protein.percentage}% success</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Carbs</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {weeklyAdherence.adherence.carbs.daysMet}/{weeklyAdherence.daysTracked}
+              </p>
+              <p className="text-xs text-gray-500">{weeklyAdherence.adherence.carbs.percentage}% success</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Fats</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {weeklyAdherence.adherence.fat.daysMet}/{weeklyAdherence.daysTracked}
+              </p>
+              <p className="text-xs text-gray-500">{weeklyAdherence.adherence.fat.percentage}% success</p>
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-gray-600 mt-4">
-          💡 <strong>Tip:</strong> Focus on incorporating foods rich in {stats.improvementAreas[0].toLowerCase()} to meet your daily targets.
-        </p>
-      </div>
+      )}
 
       {/* Motivational Message */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-6 text-center"
+        className="mt-6 bg-gradient-to-r from-primary/10 to-accent/10 dark:from-primary/20 dark:to-accent/20 rounded-xl p-6 text-center"
       >
-        <p className="text-lg font-semibold text-gray-800">
-          {calculateProgress(currentIntake.protein, goals.protein.target) >= 90 
+        <p className="text-lg font-semibold text-gray-800 dark:text-white">
+          {progress?.protein?.status === 'good'
             ? "🎉 Great job on your protein intake today!"
             : "💪 Keep pushing! You're doing great!"}
         </p>
-        <p className="text-sm text-gray-600 mt-2">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
           Remember, consistency is key to achieving your nutrition goals.
         </p>
       </motion.div>
