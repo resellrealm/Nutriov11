@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Camera,
@@ -18,17 +19,23 @@ import {
 import toast from 'react-hot-toast';
 import { incrementDailyScans, resetDailyScans } from '../store/authSlice';
 import { MAX_DAILY_SCANS, MAX_FILE_SIZE, ERROR_MESSAGES } from '../config/constants';
+import { analyzeMealPhoto, isGeminiConfigured } from '../services/geminiService';
+import { logFoodItem } from '../services/foodLogService';
 
 const MealAnalyzer = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const isPremium = useSelector(state => state.auth.isPremium);
   const dailyScansUsed = useSelector(state => state.auth.dailyScansUsed);
+  const userId = useSelector(state => state.auth.user?.id);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [scanMode, setScanMode] = useState('meal'); // 'meal' or 'barcode'
+  const [servingsConsumed, setServingsConsumed] = useState(1);
+  const [selectedMealType, setSelectedMealType] = useState('lunch');
 
   useEffect(() => {
     // Reset scans if it's a new day
@@ -69,13 +76,24 @@ const MealAnalyzer = () => {
     return dailyScansUsed < MAX_DAILY_SCANS;
   };
 
-  const analyzeMeal = () => {
+  const analyzeMeal = async () => {
     // Check scan limits for basic users
     if (!canScanMeal()) {
       toast.error(`Daily limit reached! Upgrade to Premium for unlimited scans.`, {
         duration: 4000,
         icon: '🔒',
       });
+      return;
+    }
+
+    // Check if Gemini is configured
+    if (!isGeminiConfigured() && scanMode === 'meal') {
+      toast.error('Gemini API not configured. Please add your API key to .env file.', {
+        duration: 5000,
+        icon: '⚠️'
+      });
+      // Use demo mode for development
+      useDemoAnalysis();
       return;
     }
 
@@ -86,67 +104,151 @@ const MealAnalyzer = () => {
       dispatch(incrementDailyScans());
     }
 
-    // Simulate AI analysis
-    setTimeout(() => {
+    try {
       if (scanMode === 'barcode') {
-        setAnalysisResult({
-          name: 'Nature Valley Granola Bar',
-          confidence: 98,
-          barcode: '016000275287',
-          nutrition: {
-            calories: 190,
-            protein: 4,
-            carbs: 29,
-            fats: 7,
-            fiber: 2
-          },
-          ingredients: [
-            'Whole Grain Oats',
-            'Sugar',
-            'Canola Oil',
-            'Rice Flour',
-            'Honey'
-          ],
-          suggestions: [
-            { text: 'Contains added sugars', type: 'improve' },
-            { text: 'Good source of whole grains', type: 'positive' }
-          ]
-        });
+        // Barcode mode - use demo data for now
+        // In production, this would scan a barcode from the image
+        setTimeout(() => {
+          setAnalysisResult({
+            name: 'Nature Valley Granola Bar',
+            confidence: 98,
+            barcode: '016000275287',
+            nutrition: {
+              calories: 190,
+              protein: 4,
+              carbs: 29,
+              fat: 7,
+              fiber: 2,
+              sugar: 11,
+              sodium: 160
+            },
+            ingredients: [
+              { name: 'Whole Grain Oats', amount: '30g', calories: 110 },
+              { name: 'Sugar', amount: '11g', calories: 44 },
+              { name: 'Canola Oil', amount: '5g', calories: 45 }
+            ],
+            suggestions: [
+              { text: 'Contains added sugars', type: 'improve' },
+              { text: 'Good source of whole grains', type: 'positive' }
+            ],
+            healthScore: 65,
+            mealType: 'snack'
+          });
+          setIsAnalyzing(false);
+          toast.success('Barcode scanned!');
+        }, 1500);
       } else {
-        setAnalysisResult({
-          name: 'Grilled Chicken Salad',
-          confidence: 92,
-          nutrition: {
-            calories: 385,
-            protein: 42,
-            carbs: 18,
-            fats: 16,
-            fiber: 6
-          },
-          ingredients: [
-            'Grilled chicken breast (150g)',
-            'Mixed greens (100g)',
-            'Cherry tomatoes (50g)',
-            'Cucumber (50g)',
-            'Olive oil dressing (15ml)'
-          ],
-          suggestions: [
-            { text: 'Add quinoa for more complex carbs', type: 'improve' },
-            { text: 'Great protein content!', type: 'positive' },
-            { text: 'Consider adding avocado for healthy fats', type: 'improve' }
-          ]
-        });
+        // Meal photo analysis with Gemini AI
+        const result = await analyzeMealPhoto(selectedImage);
+
+        if (result.success) {
+          setAnalysisResult(result.data);
+          setSelectedMealType(result.data.mealType || 'lunch');
+          toast.success('Meal analyzed successfully! 🎉');
+        } else if (result.demoMode) {
+          // API not configured, use demo
+          toast('Using demo mode (Gemini not configured)', { icon: 'ℹ️' });
+          useDemoAnalysis();
+        } else {
+          toast.error(result.message || 'Failed to analyze meal');
+        }
+
+        setIsAnalyzing(false);
       }
+    } catch (error) {
+      console.error('Error analyzing meal:', error);
+      toast.error('An error occurred during analysis');
       setIsAnalyzing(false);
-      toast.success(scanMode === 'barcode' ? 'Barcode scanned!' : 'Meal analyzed successfully!');
+    }
+  };
+
+  // Demo analysis for development/testing
+  const useDemoAnalysis = () => {
+    setIsAnalyzing(true);
+    setTimeout(() => {
+      setAnalysisResult({
+        name: 'Grilled Chicken Salad (Demo)',
+        confidence: 92,
+        totalWeight: 350,
+        nutrition: {
+          calories: 385,
+          protein: 42,
+          carbs: 18,
+          fat: 16,
+          fiber: 6,
+          sugar: 4,
+          sodium: 420
+        },
+        ingredients: [
+          { name: 'Grilled chicken breast', amount: '150g', calories: 165 },
+          { name: 'Mixed greens', amount: '100g', calories: 25 },
+          { name: 'Cherry tomatoes', amount: '50g', calories: 15 },
+          { name: 'Cucumber', amount: '50g', calories: 8 },
+          { name: 'Olive oil dressing', amount: '15ml', calories: 120 }
+        ],
+        suggestions: [
+          { text: 'Great protein content!', type: 'positive' },
+          { text: 'Add quinoa for more complex carbs', type: 'improve' },
+          { text: 'Consider adding avocado for healthy fats', type: 'improve' }
+        ],
+        healthScore: 88,
+        mealType: 'lunch'
+      });
+      setIsAnalyzing(false);
+      toast.success('Meal analyzed (demo mode)!');
     }, 2000);
   };
 
-  const saveMeal = () => {
-    toast.success('Meal added to your diary!');
-    // Reset state
-    setSelectedImage(null);
-    setAnalysisResult(null);
+  const saveMeal = async () => {
+    if (!analysisResult || !userId) {
+      toast.error('Missing meal data or user information');
+      return;
+    }
+
+    try {
+      // Calculate total nutrition based on servings
+      const totalNutrition = {
+        calories: Math.round((analysisResult.nutrition.calories || 0) * servingsConsumed),
+        protein: Math.round((analysisResult.nutrition.protein || 0) * servingsConsumed),
+        carbs: Math.round((analysisResult.nutrition.carbs || 0) * servingsConsumed),
+        fat: Math.round((analysisResult.nutrition.fat || 0) * servingsConsumed),
+        fiber: Math.round((analysisResult.nutrition.fiber || 0) * servingsConsumed),
+        sugar: Math.round((analysisResult.nutrition.sugar || 0) * servingsConsumed),
+        sodium: Math.round((analysisResult.nutrition.sodium || 0) * servingsConsumed)
+      };
+
+      const foodData = {
+        name: analysisResult.name,
+        brand: '',
+        imageUrl: selectedImage, // Store the analyzed image
+        servingSize: {
+          amount: analysisResult.totalWeight || 1,
+          unit: analysisResult.totalWeight ? 'g' : 'serving'
+        },
+        servingsConsumed: servingsConsumed,
+        nutrition: totalNutrition,
+        mealType: selectedMealType,
+        source: 'photo',
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      const result = await logFoodItem(userId, foodData);
+
+      if (result.success) {
+        toast.success('Meal added to your diary! 🎉');
+        // Reset state
+        setSelectedImage(null);
+        setAnalysisResult(null);
+        setServingsConsumed(1);
+        // Navigate to dashboard
+        navigate('/');
+      } else {
+        toast.error(result.error || 'Failed to save meal');
+      }
+    } catch (error) {
+      console.error('Error saving meal:', error);
+      toast.error('An error occurred while saving meal');
+    }
   };
 
   const remainingScans = isPremium ? '∞' : Math.max(0, MAX_DAILY_SCANS - dailyScansUsed);
@@ -372,10 +474,60 @@ const MealAnalyzer = () => {
                     {analysisResult.ingredients.map((ingredient, index) => (
                       <li key={index} className="text-sm text-gray-600 flex items-center">
                         <Check className="text-green-500 mr-2" size={16} />
-                        {ingredient}
+                        {typeof ingredient === 'string' ? ingredient : `${ingredient.name} (${ingredient.amount})`}
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                {/* Servings */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Servings: {servingsConsumed}x
+                  </label>
+                  <input
+                    type="range"
+                    min="0.25"
+                    max="3"
+                    step="0.25"
+                    value={servingsConsumed}
+                    onChange={(e) => setServingsConsumed(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0.25</span>
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                  </div>
+                </div>
+
+                {/* Meal Type */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Meal Type
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: 'breakfast', label: 'Breakfast', icon: '🌅' },
+                      { id: 'lunch', label: 'Lunch', icon: '☀️' },
+                      { id: 'dinner', label: 'Dinner', icon: '🌙' },
+                      { id: 'snack', label: 'Snack', icon: '🍿' }
+                    ].map((meal) => (
+                      <button
+                        key={meal.id}
+                        onClick={() => setSelectedMealType(meal.id)}
+                        className={`p-2 rounded-lg border-2 transition-all ${
+                          selectedMealType === meal.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="text-xl mb-1">{meal.icon}</div>
+                        <div className="text-xs font-medium">{meal.label}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 
                 {/* Suggestions */}
