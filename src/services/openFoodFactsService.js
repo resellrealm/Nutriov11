@@ -9,14 +9,14 @@ import {
  * Documentation: https://world.openfoodfacts.org/data
  */
 
-const API_BASE_URL = 'https://world.openfoodfacts.org/api/v0/product';
+const API_BASE_URL = 'https://world.openfoodfacts.org/api/v2/product';
 
 /**
  * Get product information by barcode
  */
 export const getProductByBarcode = async (barcode) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${barcode}.json`);
+    const response = await axios.get(`${API_BASE_URL}/${barcode}`);
 
     if (response.data.status === 0) {
       return {
