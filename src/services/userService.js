@@ -1,4 +1,4 @@
-import { db, isFirebaseFullyInitialized } from '../config/firebase';
+import { db, storage, isFirebaseFullyInitialized } from '../config/firebase';
 import {
   doc,
   getDoc,
@@ -6,6 +6,12 @@ import {
   updateDoc,
   serverTimestamp
 } from 'firebase/firestore';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
+} from 'firebase/storage';
 import {
   ERROR_CODES,
   mapFirestoreErrorCode,
@@ -349,12 +355,149 @@ export const calculateAllMetrics = (userProfile) => {
   };
 };
 
+/**
+ * Upload profile photo to Firebase Storage
+ * @param {string} userId - User ID
+ * @param {File} photoFile - Image file to upload
+ * @returns {Promise<Object>} Result with photo URL
+ */
+export const uploadProfilePhoto = async (userId, photoFile) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  if (!storage) {
+    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
+      'Storage is not configured. Please check your Firebase setup.');
+  }
+
+  try {
+    // Validate file
+    if (!photoFile) {
+      return { success: false, error: 'No file provided' };
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(photoFile.type)) {
+      return { success: false, error: 'Invalid file type. Please upload a JPG, PNG, or WebP image.' };
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (photoFile.size > maxSize) {
+      return { success: false, error: 'File too large. Maximum size is 5MB.' };
+    }
+
+    // Create a unique filename
+    const timestamp = Date.now();
+    const fileExt = photoFile.name.split('.').pop();
+    const filename = `profile_${timestamp}.${fileExt}`;
+    const storageRef = ref(storage, `users/${userId}/profile/${filename}`);
+
+    // Upload file
+    const snapshot = await uploadBytes(storageRef, photoFile);
+
+    // Get download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    // Update user profile with photo URL
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      photoURL: downloadURL,
+      photoPath: snapshot.ref.fullPath,
+      updatedAt: serverTimestamp()
+    });
+
+    return {
+      success: true,
+      data: {
+        url: downloadURL,
+        path: snapshot.ref.fullPath
+      }
+    };
+  } catch (error) {
+    const errorCode = mapFirestoreErrorCode(error.code);
+    return createErrorResponse(errorCode,
+      `Failed to upload profile photo: ${error.message}`,
+      error);
+  }
+};
+
+/**
+ * Delete profile photo from Firebase Storage
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Result
+ */
+export const deleteProfilePhoto = async (userId) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  if (!storage) {
+    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
+      'Storage is not configured. Please check your Firebase setup.');
+  }
+
+  try {
+    // Get user profile to find photo path
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      return { success: false, error: 'User profile not found' };
+    }
+
+    const userData = userSnap.data();
+    const photoPath = userData.photoPath;
+
+    if (!photoPath) {
+      return { success: false, error: 'No profile photo to delete' };
+    }
+
+    // Delete from storage
+    const photoRef = ref(storage, photoPath);
+    await deleteObject(photoRef);
+
+    // Update user profile
+    await updateDoc(userRef, {
+      photoURL: null,
+      photoPath: null,
+      updatedAt: serverTimestamp()
+    });
+
+    return {
+      success: true,
+      message: 'Profile photo deleted successfully'
+    };
+  } catch (error) {
+    // If file doesn't exist in storage, still update the profile
+    if (error.code === 'storage/object-not-found') {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        photoURL: null,
+        photoPath: null,
+        updatedAt: serverTimestamp()
+      });
+      return {
+        success: true,
+        message: 'Profile photo reference removed'
+      };
+    }
+
+    const errorCode = mapFirestoreErrorCode(error.code);
+    return createErrorResponse(errorCode,
+      `Failed to delete profile photo: ${error.message}`,
+      error);
+  }
+};
+
 export default {
   createUserProfile,
   getUserProfile,
   updateUserProfile,
   updateOnboardingProgress,
   completeOnboarding,
+  uploadProfilePhoto,
+  deleteProfilePhoto,
   calculateBMI,
   calculateTDEE,
   calculateMacros,

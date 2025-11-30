@@ -27,7 +27,7 @@ import {
   FileText
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getUserProfile, updateUserProfile } from '../services/userService';
+import { getUserProfile, updateUserProfile, uploadProfilePhoto, deleteProfilePhoto } from '../services/userService';
 import { getWeeklySummary, exportToCSV } from '../services/foodLogService';
 import { getUserRecipes } from '../services/recipeService';
 import { getUserAchievements } from '../services/achievementsService';
@@ -65,6 +65,8 @@ const Account = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [profilePhotoURL, setProfilePhotoURL] = useState(null);
 
   // Profile data from Firestore
   const [userProfile, setUserProfile] = useState(null);
@@ -117,6 +119,9 @@ const Account = () => {
             diet: profile.dietary?.restrictions?.join(', ') || '',
             gender: profile.basicInfo?.gender || ''
           });
+
+          // Set profile photo URL
+          setProfilePhotoURL(profile.photoURL || null);
 
           // Load user stats
           loadUserStats();
@@ -242,6 +247,52 @@ const Account = () => {
     }
   };
 
+  // Handle profile photo upload
+  const handlePhotoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const result = await uploadProfilePhoto(userId, file);
+      if (result.success) {
+        setProfilePhotoURL(result.data.url);
+        toast.success('Profile photo uploaded successfully!');
+      } else {
+        toast.error(result.error || 'Failed to upload photo');
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      toast.error('Failed to upload photo');
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  // Handle profile photo deletion
+  const handlePhotoDelete = async () => {
+    if (!profilePhotoURL) return;
+
+    const confirmDelete = window.confirm('Are you sure you want to delete your profile photo?');
+    if (!confirmDelete) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const result = await deleteProfilePhoto(userId);
+      if (result.success) {
+        setProfilePhotoURL(null);
+        toast.success('Profile photo deleted successfully!');
+      } else {
+        toast.error(result.error || 'Failed to delete photo');
+      }
+    } catch (error) {
+      console.error('Photo delete error:', error);
+      toast.error('Failed to delete photo');
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
   // Export ALL data (profile + food logs + recipes + achievements)
   const handleExportAllData = async () => {
     if (!userId) {
@@ -358,13 +409,46 @@ const Account = () => {
       <SettingSection title="Profile">
         <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
           {/* Avatar */}
-          <div className="relative">
-            <div className="w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white text-3xl font-bold">
-              {profileData.name?.[0]?.toUpperCase() || userEmail?.[0]?.toUpperCase() || 'U'}
-            </div>
-            <button className="absolute bottom-0 right-0 bg-white dark:bg-gray-700 p-2 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-              <Camera size={16} className="text-gray-600 dark:text-gray-300" />
-            </button>
+          <div className="relative group">
+            {profilePhotoURL ? (
+              <img
+                src={profilePhotoURL}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
+              />
+            ) : (
+              <div className="w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-primary/20">
+                {profileData.name?.[0]?.toUpperCase() || userEmail?.[0]?.toUpperCase() || 'U'}
+              </div>
+            )}
+
+            {/* Upload Button */}
+            <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-white dark:bg-gray-700 p-2 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer">
+              {isUploadingPhoto ? (
+                <Loader size={16} className="text-gray-600 dark:text-gray-300 animate-spin" />
+              ) : (
+                <Camera size={16} className="text-gray-600 dark:text-gray-300" />
+              )}
+            </label>
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+              disabled={isUploadingPhoto}
+            />
+
+            {/* Delete Button (only show if photo exists) */}
+            {profilePhotoURL && !isUploadingPhoto && (
+              <button
+                onClick={handlePhotoDelete}
+                className="absolute -top-1 -right-1 bg-red-500 p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                title="Delete photo"
+              >
+                <X size={14} className="text-white" />
+              </button>
+            )}
           </div>
 
           {/* User Info */}
