@@ -59,14 +59,14 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: ShoppingCart,
       label: 'Grocery List',
       color: 'text-green-500',
-      premiumOnly: false,
+      premiumOnly: true, // premium only
     },
     {
       path: '/goals',
       icon: Target,
       label: 'Goals',
       color: 'text-orange-500',
-      premiumOnly: true, // premium only
+      premiumOnly: false,
     },
     {
       path: '/favourites',

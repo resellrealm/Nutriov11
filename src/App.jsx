@@ -67,6 +67,28 @@ const AuthRequiredRoute = ({ children }) => {
   return children;
 };
 
+// Premium Route - requires both authentication and premium status
+const PremiumRoute = ({ children }) => {
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const hasCompletedOnboarding = useSelector(state => state.auth.hasCompletedOnboarding);
+  const isPremium = useSelector(state => state.auth.isPremium);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  if (!hasCompletedOnboarding) {
+    return <Navigate to="/onboarding" />;
+  }
+
+  // If not premium, redirect to dashboard with upgrade prompt
+  if (!isPremium) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 // Inner app component that can use hooks
 function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
@@ -177,8 +199,8 @@ function AppContent() {
                 >
                   <Route index element={<Dashboard />} />
                   <Route path="analyze" element={<MealAnalyzer />} />
-                  <Route path="meal-planner" element={<MealPlanner />} />
-                  <Route path="grocery-list" element={<GroceryList />} />
+                  <Route path="meal-planner" element={<PremiumRoute><MealPlanner /></PremiumRoute>} />
+                  <Route path="grocery-list" element={<PremiumRoute><GroceryList /></PremiumRoute>} />
                   <Route path="goals" element={<Goals />} />
                   <Route path="favourites" element={<Favourites />} />
                   <Route path="achievements" element={<Achievements />} />

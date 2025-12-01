@@ -18,7 +18,8 @@ export const AUTH_RETRY_TIMEOUT = 10000; // 10 seconds for retry operations
 export const REDUX_PERSIST_DEBOUNCE = 1000; // 1 second debounce for localStorage saves
 
 // Meal Analyzer
-export const MAX_DAILY_SCANS = 5; // Maximum AI scans per day
+export const MAX_DAILY_SCANS = 2; // Maximum AI scans per day for free users
+export const MAX_DAILY_SCANS_PREMIUM = 20; // Maximum AI scans per day for premium users (hidden cap)
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB maximum file size
 
 // Nutrition Defaults

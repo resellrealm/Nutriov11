@@ -379,9 +379,9 @@ const Account = () => {
     }
   };
 
-  // Get subscription info from localStorage (temporary)
+  // Get subscription info from localStorage and Redux
   const subscriptionTier = localStorage.getItem('planTier') || 'free';
-  const scansThisMonth = parseInt(localStorage.getItem('scansThisMonth') || '0');
+  const dailyScansUsed = useSelector(state => state.auth.dailyScansUsed) || 0;
 
   if (isLoading) {
     return (
@@ -628,8 +628,8 @@ const Account = () => {
               <h4 className="font-semibold text-gray-800 dark:text-white capitalize">{subscriptionTier} Plan</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 {subscriptionTier === 'premium'
-                  ? 'Unlimited scans & all features'
-                  : `${scansThisMonth}/5 scans used this month`}
+                  ? `${dailyScansUsed}/20 scans used today`
+                  : `${dailyScansUsed}/2 scans used today`}
               </p>
             </div>
             {subscriptionTier === 'free' && (
@@ -660,7 +660,7 @@ const Account = () => {
               <ul className="space-y-1.5">
                 <li className="flex items-center space-x-2">
                   <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
-                  <span>Unlimited food scans</span>
+                  <span>20 food scans per day</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
@@ -692,7 +692,7 @@ const Account = () => {
                 </li>
               </ul>
               <p className="mt-3 text-xs text-gray-500 dark:text-gray-500">
-                Basic plan: 5 scans/month, limited meal suggestions
+                Basic plan: 2 scans/day, basic meal suggestions
               </p>
             </div>
           </div>

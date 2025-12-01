@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { incrementDailyScans, resetDailyScans } from '../store/authSlice';
-import { MAX_DAILY_SCANS, MAX_FILE_SIZE, ERROR_MESSAGES } from '../config/constants';
+import { MAX_DAILY_SCANS, MAX_DAILY_SCANS_PREMIUM, MAX_FILE_SIZE, ERROR_MESSAGES } from '../config/constants';
 import { analyzeMealPhoto, isGeminiConfigured } from '../services/geminiService';
 import { logFoodItem } from '../services/foodLogService';
 
@@ -71,18 +71,31 @@ const MealAnalyzer = () => {
   };
 
   const canScanMeal = () => {
-    if (isPremium) return true;
     if (scanMode === 'barcode') return true; // Unlimited barcode scans
+
+    // Premium users: hidden cap at 20 scans/day
+    if (isPremium) {
+      return dailyScansUsed < MAX_DAILY_SCANS_PREMIUM;
+    }
+
+    // Free users: 2 scans/day
     return dailyScansUsed < MAX_DAILY_SCANS;
   };
 
   const analyzeMeal = async () => {
-    // Check scan limits for basic users
+    // Check scan limits
     if (!canScanMeal()) {
-      toast.error(`Daily limit reached! Upgrade to Premium for unlimited scans.`, {
-        duration: 4000,
-        icon: '🔒',
-      });
+      if (isPremium) {
+        toast.error(`Daily scan limit reached. Please try again tomorrow.`, {
+          duration: 4000,
+          icon: '⏰',
+        });
+      } else {
+        toast.error(`Daily limit reached! Upgrade to Premium for more scans.`, {
+          duration: 4000,
+          icon: '🔒',
+        });
+      }
       return;
     }
 
