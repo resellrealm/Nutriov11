@@ -25,13 +25,19 @@ import toast from 'react-hot-toast';
 import { analyzeFridgePhoto, generateMealSuggestionsFromIngredients } from '../services/geminiService';
 import { getUserGoals } from '../services/goalsService';
 import { logFoodItem } from '../services/foodLogService';
-import { saveUserRecipe } from '../services/recipeService';
+import { saveUserRecipe, getAllRecipes } from '../services/recipeService';
+import { getUserProfile } from '../services/userService';
+import { getMealsForUser } from '../services/aiMealGenerationService';
 
 const MealPlanner = () => {
   const navigate = useNavigate();
   const user = useSelector(state => state.auth.user);
   const userId = user?.id;
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState('weekly'); // 'weekly' or 'scanner'
+
+  // Scanner tab state
   const [selectedMealType, setSelectedMealType] = useState('lunch');
   const [selectedDifficulty, setSelectedDifficulty] = useState('easy');
   const [fridgeScanned, setFridgeScanned] = useState(false);
@@ -44,10 +50,17 @@ const MealPlanner = () => {
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [showMealDetailModal, setShowMealDetailModal] = useState(false);
 
-  // Fetch user goals
+  // Weekly meals state
+  const [weeklyMeals, setWeeklyMeals] = useState(null);
+  const [loadingWeeklyMeals, setLoadingWeeklyMeals] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  // Fetch user goals and profile
   useEffect(() => {
     if (userId) {
       loadUserGoals();
+      loadUserProfileAndMeals();
     }
   }, [userId]);
 
@@ -55,6 +68,27 @@ const MealPlanner = () => {
     const result = await getUserGoals(userId);
     if (result.success && result.data) {
       setUserGoals(result.data);
+    }
+  };
+
+  const loadUserProfileAndMeals = async () => {
+    setLoadingWeeklyMeals(true);
+    try {
+      // Fetch user profile
+      const profileResult = await getUserProfile(userId);
+      if (profileResult.success) {
+        const profile = profileResult.data;
+        setUserProfile(profile);
+
+        // Fetch AI-generated meals with allergy filtering
+        const meals = await getMealsForUser(profile);
+        setWeeklyMeals(meals);
+      }
+    } catch (error) {
+      console.error('Error loading weekly meals:', error);
+      toast.error('Failed to load weekly meals');
+    } finally {
+      setLoadingWeeklyMeals(false);
     }
   };
 
@@ -333,16 +367,165 @@ const MealPlanner = () => {
   return (
     <div className="max-w-6xl mx-auto pb-20">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
           <ChefHat className="mr-3 text-purple-500" size={32} />
           Smart Meal Planner
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Scan your fridge and get AI-powered meal suggestions based on your goals
+          {activeTab === 'weekly' ?
+            'AI-generated meals personalized for your goals and dietary needs' :
+            'Scan your fridge and get AI-powered meal suggestions based on your goals'
+          }
         </p>
       </div>
 
+      {/* Tabs */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-card p-2 mb-6 flex gap-2">
+        <button
+          onClick={() => setActiveTab('weekly')}
+          className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
+            activeTab === 'weekly'
+              ? 'bg-primary text-white shadow-md'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+        >
+          <Calendar className="inline mr-2" size={18} />
+          This Week's Meals
+        </button>
+        <button
+          onClick={() => setActiveTab('scanner')}
+          className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
+            activeTab === 'scanner'
+              ? 'bg-primary text-white shadow-md'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+        >
+          <Camera className="inline mr-2" size={18} />
+          Fridge Scanner
+        </button>
+      </div>
+
+      {/* Weekly Meals Tab */}
+      {activeTab === 'weekly' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          {loadingWeeklyMeals ? (
+            <div className="text-center py-12">
+              <Loader className="animate-spin mx-auto text-primary mb-3" size={48} />
+              <p className="text-gray-600 dark:text-gray-400">Loading your personalized meals...</p>
+            </div>
+          ) : weeklyMeals ? (
+            <>
+              {/* Meal Type Tabs */}
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {mealTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => setSelectedMealType(type.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition ${
+                      selectedMealType === type.id
+                        ? 'bg-primary/10 text-primary border-2 border-primary'
+                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-2 border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <type.icon size={18} />
+                    {type.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Meals Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {weeklyMeals[selectedMealType]?.map((meal, index) => (
+                  <motion.div
+                    key={meal.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-card p-5 hover:shadow-lg transition cursor-pointer"
+                    onClick={() => {
+                      setSelectedMeal(meal);
+                      setShowMealDetailModal(true);
+                    }}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <span className="text-4xl">{meal.image || '🍽️'}</span>
+                      <div className="flex gap-1">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          meal.difficulty === 'Easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          meal.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                          'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                        }`}>
+                          {meal.difficulty}
+                        </span>
+                      </div>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                      {meal.name}
+                    </h3>
+
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                      {meal.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 rounded text-xs font-medium">
+                        {meal.calories} cal
+                      </span>
+                      <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs font-medium">
+                        {meal.protein}g protein
+                      </span>
+                      <span className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded text-xs font-medium">
+                        {meal.cookTime}
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {meal.tags?.slice(0, 2).map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button className="text-primary font-medium text-sm hover:underline">
+                        View Recipe →
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {(!weeklyMeals[selectedMealType] || weeklyMeals[selectedMealType].length === 0) && (
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+                  <Sparkles className="mx-auto text-gray-400 mb-3" size={48} />
+                  <p className="text-gray-600 dark:text-gray-400 mb-2">No meals available for this category</p>
+                  <p className="text-sm text-gray-500">Try refreshing or check back later!</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+              <ChefHat className="mx-auto text-gray-400 mb-3" size={48} />
+              <p className="text-gray-600 dark:text-gray-400 mb-2">No weekly meals generated yet</p>
+              <p className="text-sm text-gray-500">Check back soon for AI-generated meal plans!</p>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Fridge Scanner Tab */}
+      {activeTab === 'scanner' && (
+        <>
       {/* Step 1: Scan Fridge */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -681,6 +864,10 @@ const MealPlanner = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Close Scanner Tab */}
+        </>
+      )}
     </div>
   );
 };

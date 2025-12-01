@@ -116,18 +116,62 @@ const Dashboard = () => {
       }
 
       // Get personalized meal recommendation based on today's intake
+      // Use AI-generated meal with allergy filtering
       const todayIntake = todayResult?.data?.totals || {};
-      const mealRecommendation = getPersonalizedMealOfTheDay(todayIntake, profile);
-      setRecommendedMeal(mealRecommendation.meal);
-      setMealReasons(mealRecommendation.reasons || []);
+      const aiMeal = await getMealOfTheDay(profile);
 
-      // Generate nutrition insights
-      const insights = generateNutritionInsights(mealRecommendation.analysis, goal);
-      setNutritionInsights(insights);
+      if (aiMeal) {
+        // AI meal found - includes allergy filtering
+        setRecommendedMeal(aiMeal);
 
-      // Get food suggestions for deficiencies
-      const suggestions = getFoodSuggestionsForDeficiencies(mealRecommendation.analysis);
-      setFoodSuggestions(suggestions);
+        // Generate reasons based on user goal and dietary restrictions
+        const reasons = [];
+        if (profile.goals?.primary) {
+          const goalReasons = {
+            lose_weight: `Optimized for weight loss with ${aiMeal.calories} calories`,
+            gain_muscle: `High protein (${aiMeal.protein}g) to support muscle growth`,
+            improve_health: 'Nutrient-dense ingredients for overall health',
+            maintain: 'Balanced macros to maintain your current weight',
+            manage_condition: 'Carefully selected ingredients for health management',
+            athletic_performance: 'Optimized for energy and performance'
+          };
+          reasons.push(goalReasons[profile.goals.primary]);
+        }
+
+        if (profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 && !profile.dietaryRestrictions.includes('none')) {
+          reasons.push(`Follows your ${profile.dietaryRestrictions.join(', ')} diet`);
+        }
+
+        if (profile.allergies && profile.allergies.length > 0 && !profile.allergies.includes('none')) {
+          reasons.push('✓ Allergen-free based on your profile');
+        }
+
+        setMealReasons(reasons);
+
+        // Generate nutrition insights from AI meal
+        const mockAnalysis = {
+          protein: aiMeal.protein >= (profile.calculated?.protein || 0) * 0.3,
+          carbs: true,
+          fat: true,
+          fiber: aiMeal.fiber >= 8
+        };
+        const insights = generateNutritionInsights(mockAnalysis, goal);
+        setNutritionInsights(insights);
+        setFoodSuggestions([]);
+      } else {
+        // Fallback to smart recommendation service
+        const mealRecommendation = getPersonalizedMealOfTheDay(todayIntake, profile);
+        setRecommendedMeal(mealRecommendation.meal);
+        setMealReasons(mealRecommendation.reasons || []);
+
+        // Generate nutrition insights
+        const insights = generateNutritionInsights(mealRecommendation.analysis, goal);
+        setNutritionInsights(insights);
+
+        // Get food suggestions for deficiencies
+        const suggestions = getFoodSuggestionsForDeficiencies(mealRecommendation.analysis);
+        setFoodSuggestions(suggestions);
+      }
 
     } catch (err) {
       setError(err.message);
@@ -413,14 +457,108 @@ const Dashboard = () => {
                   </ul>
                 </div>
               )}
+
+              {/* Cooking Details */}
+              {recommendedMeal.ingredients && recommendedMeal.ingredients.length > 0 && (
+                <div className="mt-4 bg-white/60 dark:bg-gray-800/60 rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Ingredients */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                        <Apple size={16} className="text-primary" />
+                        Ingredients
+                      </h5>
+                      <ul className="space-y-1">
+                        {recommendedMeal.ingredients.map((ingredient, index) => (
+                          <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-start">
+                            <span className="text-green-500 mr-2">✓</span>
+                            <span>{ingredient}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Cooking Info */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                        <Clock size={16} className="text-primary" />
+                        Cooking Info
+                      </h5>
+                      <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                        {recommendedMeal.prepTime && (
+                          <div className="flex justify-between">
+                            <span className="font-medium">Prep Time:</span>
+                            <span>{recommendedMeal.prepTime}</span>
+                          </div>
+                        )}
+                        {recommendedMeal.cookTime && (
+                          <div className="flex justify-between">
+                            <span className="font-medium">Cook Time:</span>
+                            <span>{recommendedMeal.cookTime}</span>
+                          </div>
+                        )}
+                        {recommendedMeal.difficulty && (
+                          <div className="flex justify-between">
+                            <span className="font-medium">Difficulty:</span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              recommendedMeal.difficulty === 'Easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                              recommendedMeal.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                              'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            }`}>
+                              {recommendedMeal.difficulty}
+                            </span>
+                          </div>
+                        )}
+                        {recommendedMeal.servings && (
+                          <div className="flex justify-between">
+                            <span className="font-medium">Servings:</span>
+                            <span>{recommendedMeal.servings}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cooking Instructions */}
+                  {recommendedMeal.instructions && recommendedMeal.instructions.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                        <Utensils size={16} className="text-primary" />
+                        Instructions
+                      </h5>
+                      <ol className="space-y-2">
+                        {recommendedMeal.instructions.map((instruction, index) => (
+                          <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-start">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-semibold text-xs mr-2 flex-shrink-0 mt-0.5">
+                              {index + 1}
+                            </span>
+                            <span>{instruction}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-3">
             <button
               onClick={() => navigate('/meal-planner')}
               className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition text-sm"
             >
-              Plan Your Meals
+              View All Meals
+            </button>
+            <button
+              onClick={() => {
+                // Copy recipe to clipboard
+                const recipeText = `${recommendedMeal.name}\n\nIngredients:\n${recommendedMeal.ingredients?.join('\n') || ''}\n\nInstructions:\n${recommendedMeal.instructions?.map((inst, i) => `${i + 1}. ${inst}`).join('\n') || ''}`;
+                navigator.clipboard.writeText(recipeText);
+                toast.success('Recipe copied to clipboard!');
+              }}
+              className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm"
+            >
+              Copy Recipe
             </button>
           </div>
         </motion.div>

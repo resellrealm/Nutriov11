@@ -252,11 +252,11 @@ const onboardingSlice = createSlice({
       state.stepValidation[7] = state.dietaryRestrictions.length > 0;
     },
 
-    // Screen 8: Allergies
+    // Screen 8: Allergies (REQUIRED - must select at least "none")
     setAllergies: (state, action) => {
       state.allergies = action.payload;
-      state.stepValidation[8] = true; // Optional but always valid
-      state.errors[8] = null;
+      state.stepValidation[8] = state.allergies.length > 0;
+      state.errors[8] = state.allergies.length > 0 ? null : 'Please select allergies or "None"';
     },
 
     toggleAllergy: (state, action) => {
@@ -266,7 +266,8 @@ const onboardingSlice = createSlice({
       } else {
         state.allergies.push(allergy);
       }
-      state.stepValidation[8] = true;
+      state.stepValidation[8] = state.allergies.length > 0;
+      state.errors[8] = state.allergies.length > 0 ? null : 'Please select allergies or "None"';
     },
 
     // Screen 9: Cuisine Preferences (CRITICAL - minimum 3)
