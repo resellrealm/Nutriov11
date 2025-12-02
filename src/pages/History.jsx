@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { auth } from '../config/firebase';
 import { getFoodLogByDateRange } from '../services/foodLogService';
-import { toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { format, startOfDay, endOfDay, subDays, addMonths, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 
 const History = () => {
