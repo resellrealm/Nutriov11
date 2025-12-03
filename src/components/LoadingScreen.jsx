@@ -15,7 +15,10 @@ const LoadingScreen = ({ onLoadingComplete }) => {
         if (oldProgress >= 100) {
           clearInterval(timer);
           setTimeout(() => {
-            onLoadingComplete();
+            // Safe check before calling callback
+            if (typeof onLoadingComplete === 'function') {
+              onLoadingComplete();
+            }
           }, LOADING_COMPLETION_DELAY);
           return 100;
         }
@@ -24,6 +27,7 @@ const LoadingScreen = ({ onLoadingComplete }) => {
       });
     }, LOADING_SCREEN_INTERVAL);
 
+    // Cleanup on unmount
     return () => {
       clearInterval(timer);
     };
