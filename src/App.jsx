@@ -16,6 +16,30 @@ import LoadingScreen from './components/LoadingScreen';
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
 
+
+// Lazy loading wrapper with error recovery
+const lazyWithRetry = (componentImport) => {
+  return lazy(() => {
+    return new Promise((resolve, reject) => {
+      // Try to load the component
+      const attemptLoad = (retries = 3) => {
+        componentImport()
+          .then(resolve)
+          .catch((error) => {
+            if (retries > 0) {
+              // Wait a bit before retrying
+              setTimeout(() => {
+                attemptLoad(retries - 1);
+              }, 1000);
+            } else {
+              // If all retries failed, reject with a friendly error
+              reject(error);
+            }
+          });
+      };
+      attemptLoad();
+    });
+
 // Retry logic for failed lazy imports
 const retryImport = (importFn, retries = 3, delay = 1000) => {
   return new Promise((resolve, reject) => {
@@ -32,10 +56,28 @@ const retryImport = (importFn, retries = 3, delay = 1000) => {
             .catch(reject);
         }, delay);
       });
+main
   });
 };
 
 // Lazy-loaded pages for code splitting with retry logic
+claude/fix-loading-errors-01GLYDhhfiK7vtGoDed6TWX7
+const OnboardingFlowV2 = lazyWithRetry(() => import('./components/OnboardingV2/OnboardingFlowV2'));
+const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+const MealAnalyzer = lazyWithRetry(() => import('./pages/MealAnalyzer'));
+const MealPlanner = lazyWithRetry(() => import('./pages/MealPlanner'));
+const Goals = lazyWithRetry(() => import('./pages/Goals'));
+const Favourites = lazyWithRetry(() => import('./pages/Favourites'));
+const Achievements = lazyWithRetry(() => import('./pages/Achievements'));
+const Analytics = lazyWithRetry(() => import('./pages/Analytics'));
+const History = lazyWithRetry(() => import('./pages/History'));
+const Account = lazyWithRetry(() => import('./pages/Account'));
+const GroceryList = lazyWithRetry(() => import('./pages/GroceryList'));
+const BarcodeScanner = lazyWithRetry(() => import('./pages/BarcodeScanner'));
+const Login = lazyWithRetry(() => import('./pages/Login'));
+const Register = lazyWithRetry(() => import('./pages/Register'));
+
 const OnboardingFlowV2 = lazy(() => retryImport(() => import('./components/OnboardingV2/OnboardingFlowV2')));
 const Onboarding = lazy(() => retryImport(() => import('./pages/Onboarding')));
 const Dashboard = lazy(() => retryImport(() => import('./pages/Dashboard')));
@@ -51,6 +93,7 @@ const GroceryList = lazy(() => retryImport(() => import('./pages/GroceryList')))
 const BarcodeScanner = lazy(() => retryImport(() => import('./pages/BarcodeScanner')));
 const Login = lazy(() => retryImport(() => import('./pages/Login')));
 const Register = lazy(() => retryImport(() => import('./pages/Register')));
+main
 
 // Loading fallback component
 const PageLoader = () => (

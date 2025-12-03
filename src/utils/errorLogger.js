@@ -16,11 +16,15 @@ export const logError = (context, error, metadata = {}) => {
   const errorMessage = error?.message || error;
   const errorStack = error?.stack;
 
-  // In development, log to console for debugging
-  if (isDevelopment) {
-    console.error(`[${context}]`, errorMessage, metadata);
-    if (errorStack) {
-      console.error(errorStack);
+  // In development, log to console for debugging (with safety check)
+  if (isDevelopment && typeof console !== 'undefined' && console.error) {
+    try {
+      console.error(`[${context}]`, errorMessage, metadata);
+      if (errorStack) {
+        console.error(errorStack);
+      }
+    } catch {
+      // Silently fail if console is unavailable
     }
   }
 
@@ -67,8 +71,12 @@ export const logError = (context, error, metadata = {}) => {
  * @param {Object} metadata - Additional metadata
  */
 export const logWarning = (context, message, metadata = {}) => {
-  if (isDevelopment) {
-    console.warn(`[${context}]`, message, metadata);
+  if (isDevelopment && typeof console !== 'undefined' && console.warn) {
+    try {
+      console.warn(`[${context}]`, message, metadata);
+    } catch {
+      // Silently fail if console is unavailable
+    }
   }
 };
 
@@ -79,7 +87,11 @@ export const logWarning = (context, message, metadata = {}) => {
  * @param {Object} metadata - Additional metadata
  */
 export const logInfo = (context, message, metadata = {}) => {
-  if (isDevelopment) {
-    console.info(`[${context}]`, message, metadata);
+  if (isDevelopment && typeof console !== 'undefined' && console.info) {
+    try {
+      console.info(`[${context}]`, message, metadata);
+    } catch {
+      // Silently fail if console is unavailable
+    }
   }
 };
