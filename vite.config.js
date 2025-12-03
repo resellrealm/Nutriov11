@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode }) => ({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   server: {
     port: 5173,
@@ -11,7 +11,6 @@ export default defineConfig(({ command, mode }) => ({
   build: {
     rollupOptions: {
       output: {
-claude/fix-loading-errors-01GLYDhhfiK7vtGoDed6TWX7
         manualChunks: (id) => {
           // Group all firebase modules together
           if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
@@ -33,13 +32,6 @@ claude/fix-loading-errors-01GLYDhhfiK7vtGoDed6TWX7
           if (id.includes('node_modules/recharts')) {
             return 'charts-vendor';
           }
-
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'redux-vendor': ['react-redux', '@reduxjs/toolkit'],
-          'ui-vendor': ['framer-motion', 'lucide-react', 'react-hot-toast'],
-          'charts-vendor': ['recharts']
-main
         }
       }
     },

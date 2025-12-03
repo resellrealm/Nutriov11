@@ -458,59 +458,11 @@ const filterMealsArrayByAllergies = (meals, allergies) => {
 };
 
 /**
- * Filter meals to exclude allergens (LEGACY format - object with meal types)
- */
-const filterMealsByAllergies = (meals, allergies) => {
-  // Map allergy names to common ingredient keywords
-  const allergenKeywords = {
-    peanuts: ['peanut', 'peanuts'],
-    tree_nuts: ['almond', 'cashew', 'walnut', 'pecan', 'pistachio', 'hazelnut', 'macadamia', 'nut'],
-    shellfish: ['shrimp', 'crab', 'lobster', 'shellfish', 'prawn', 'crayfish'],
-    fish: ['salmon', 'tuna', 'cod', 'fish', 'tilapia', 'trout', 'halibut'],
-    eggs: ['egg', 'eggs'],
-    dairy: ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'dairy', 'whey', 'casein'],
-    soy: ['soy', 'tofu', 'tempeh', 'edamame', 'miso'],
-    wheat: ['wheat', 'flour', 'bread', 'pasta', 'couscous'],
-    sesame: ['sesame', 'tahini']
-  };
-
-  const filteredMeals = {};
-
-  Object.keys(meals).forEach(mealType => {
-    filteredMeals[mealType] = meals[mealType].filter(meal => {
-      // Check if any ingredient contains allergen
-      const ingredientsText = meal.ingredients.join(' ').toLowerCase();
-
-      for (const allergy of allergies) {
-        // Handle custom allergies (format: "other:custom_name")
-        if (allergy.startsWith('other:')) {
-          const customAllergen = allergy.split(':')[1].toLowerCase();
-          if (ingredientsText.includes(customAllergen)) {
-            return false; // Exclude this meal
-          }
-        } else if (allergenKeywords[allergy]) {
-          // Check predefined allergens
-          for (const keyword of allergenKeywords[allergy]) {
-            if (ingredientsText.includes(keyword)) {
-              return false; // Exclude this meal
-            }
-          }
-        }
-      }
-
-      return true; // Include this meal
-    });
-  });
-
-  return filteredMeals;
-};
-
-/**
  * Get "Meal of the Day" for user
  * NEW: Returns meal for current day of week (Monday = day 1, etc.)
  * Falls back to random meal if day metadata not available
  */
-export const getMealOfTheDay = async (userProfile, mealType = null) => {
+export const getMealOfTheDay = async (userProfile, _mealType = null) => {
   const meals = await getMealsForUser(userProfile);
 
   if (!meals || meals.length === 0) {
