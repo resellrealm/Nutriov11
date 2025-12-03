@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   TrendingUp, Activity, Flame, Target, Apple, Utensils, Calendar,
   PieChart as PieChartIcon, BarChart3, TrendingDown, Award, Clock,
-  Loader, AlertCircle
+  Loader, AlertCircle, Lock, Crown
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, LineChart, Line,
@@ -65,6 +65,7 @@ const getQuoteByGoal = (primaryGoal) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const userId = useSelector(state => state.auth.user?.id);
+  const isPremium = useSelector(state => state.auth.isPremium);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -616,12 +617,80 @@ const Dashboard = () => {
       {/* Recommended Meal of the Day */}
       {recommendedMeal && (
         <motion.div
-          className="bg-gradient-to-r from-primary/10 to-emerald-500/10 dark:from-primary/20 dark:to-emerald-500/20 border border-primary/20 rounded-xl p-6"
+          className="relative bg-gradient-to-r from-primary/10 to-emerald-500/10 dark:from-primary/20 dark:to-emerald-500/20 border border-primary/20 rounded-xl p-6 overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          <div className="flex items-start justify-between">
+          {/* Blurred Preview for Free Users */}
+          {!isPremium && (
+            <>
+              {/* Blurred Content Background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-emerald-500/10 dark:from-primary/20 dark:to-emerald-500/20 filter blur-sm">
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-3xl">{recommendedMeal.image}</span>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Personalized Meal of the Day
+                    </h3>
+                  </div>
+                  <h4 className="text-xl font-bold text-primary mb-2">
+                    {recommendedMeal.name}
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-400 mb-3">
+                    {recommendedMeal.description}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+                      {recommendedMeal.calories} cal
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      {recommendedMeal.protein}g protein
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lock Overlay */}
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center z-10 rounded-xl">
+                <div className="text-center px-6 max-w-md">
+                  <div className="bg-gradient-to-br from-amber-500 to-orange-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
+                    <Crown className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    Unlock Personalized Meals
+                  </h3>
+                  <p className="text-white/90 mb-4 text-sm">
+                    Get AI-powered meal recommendations tailored to your goals, dietary preferences, and allergies
+                  </p>
+                  <div className="flex flex-col gap-2 mb-3">
+                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                      <span className="text-green-400">✓</span>
+                      <span>7 personalized meals per week</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                      <span className="text-green-400">✓</span>
+                      <span>Automatic allergy filtering</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                      <span className="text-green-400">✓</span>
+                      <span>Goal-optimized nutrition</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate('/account')}
+                    className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                  >
+                    Upgrade to Premium
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Full Content for Premium Users */}
+          {isPremium && (
+            <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-3xl">{recommendedMeal.image}</span>
@@ -779,6 +848,7 @@ const Dashboard = () => {
               Copy Recipe
             </button>
           </div>
+          )}
         </motion.div>
       )}
 

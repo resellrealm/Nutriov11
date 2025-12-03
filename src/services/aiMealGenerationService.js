@@ -191,7 +191,44 @@ Return ONLY valid JSON (no markdown, no extra text) in this EXACT format:
 };
 
 /**
+ * Generate 7 meals for a single category (1 meal per day for 7 days)
+ * Each day gets a random meal type (breakfast, lunch, or dinner)
+ * NEW: Optimized version - saves 75% API costs vs old 28-meal system
+ */
+export const generateWeeklyMeals = async (goal, dietaryType, onProgress = null) => {
+  const meals = []; // Array of 7 meals, one per day
+  const mealTypesForSelection = ['breakfast', 'lunch', 'dinner']; // Exclude snacks from daily rotation
+
+  try {
+    // Generate 7 meals, one per day, random meal type
+    for (let day = 1; day <= 7; day++) {
+      // Randomly select meal type for this day
+      const randomMealType = mealTypesForSelection[Math.floor(Math.random() * mealTypesForSelection.length)];
+
+      const meal = await generateSingleMeal(randomMealType, goal, dietaryType, day);
+
+      // Add day metadata
+      meal.dayOfWeek = day;
+      meals.push(meal);
+
+      if (onProgress) {
+        onProgress({ completed: day, total: 7, mealType: randomMealType, day });
+      }
+
+      // Rate limiting: wait 1 second between requests (Gemini free tier: 60 req/min)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    return meals;
+  } catch (error) {
+    console.error(`Error generating weekly meals for ${goal}_${dietaryType}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Generate 28 meals for a single category (7 days × 4 meal types)
+ * LEGACY: Kept for backwards compatibility, use generateWeeklyMeals() instead
  */
 export const generateCategoryMeals = async (goal, dietaryType, onProgress = null) => {
   const meals = {
@@ -283,7 +320,8 @@ export const fetchMealsFromFirestore = async (weekNumber, categoryId) => {
 
 /**
  * Generate meals for all 72 categories (Sunday batch generation)
- * This should be run weekly, ideally as a scheduled job
+ * NEW: Generates 7 meals per category (75% API cost reduction)
+ * This should be run weekly, ideally as a scheduled job (GitHub Actions)
  */
 export const generateAllCategoryMeals = async (onProgress = null) => {
   const weekNumber = getCurrentWeekNumber();
@@ -292,7 +330,8 @@ export const generateAllCategoryMeals = async (onProgress = null) => {
   let completedCategories = 0;
 
   console.log(`🚀 Starting weekly meal generation for Week ${weekNumber}`);
-  console.log(`📊 Generating ${totalCategories} categories × 28 meals = ${totalCategories * 28} total meals`);
+  console.log(`📊 Generating ${totalCategories} categories × 7 meals = ${totalCategories * 7} total meals`);
+  console.log(`💰 Cost savings: 75% vs old 28-meal system`);
 
   const results = {
     success: [],
@@ -300,12 +339,13 @@ export const generateAllCategoryMeals = async (onProgress = null) => {
   };
 
   for (const categoryId of allCategories) {
-    const [goal, dietaryType] = categoryId.split('_');
+    const [goal, ...dietaryTypeParts] = categoryId.split('_');
+    const dietaryType = dietaryTypeParts.join('_'); // Handle dietary types with underscores (e.g., "gluten_free")
 
     try {
       console.log(`\n🔄 Generating ${categoryId}... (${completedCategories + 1}/${totalCategories})`);
 
-      const meals = await generateCategoryMeals(goal, dietaryType, (progress) => {
+      const meals = await generateWeeklyMeals(goal, dietaryType, (progress) => {
         if (onProgress) {
           onProgress({
             category: categoryId,
@@ -338,6 +378,7 @@ export const generateAllCategoryMeals = async (onProgress = null) => {
 
 /**
  * Get meals for user based on their profile
+ * NEW: Returns array of 7 meals (one per day)
  * Includes allergy filtering
  */
 export const getMealsForUser = async (userProfile) => {
@@ -353,16 +394,71 @@ export const getMealsForUser = async (userProfile) => {
     return null;
   }
 
-  // Filter meals based on allergies
-  if (userProfile.allergies && userProfile.allergies.length > 0 && !userProfile.allergies.includes('none')) {
-    meals = filterMealsByAllergies(meals, userProfile.allergies);
+  // Handle new format (array of 7 meals) or legacy format (object with meal types)
+  let mealsArray = Array.isArray(meals) ? meals : [];
+
+  // If legacy format (object), convert to array
+  if (!Array.isArray(meals) && typeof meals === 'object') {
+    mealsArray = [
+      ...(meals.breakfast || []),
+      ...(meals.lunch || []),
+      ...(meals.dinner || []),
+      ...(meals.snack || [])
+    ];
   }
 
-  return meals;
+  // Filter meals based on allergies
+  if (userProfile.allergies && userProfile.allergies.length > 0 && !userProfile.allergies.includes('none')) {
+    mealsArray = filterMealsArrayByAllergies(mealsArray, userProfile.allergies);
+  }
+
+  return mealsArray;
 };
 
 /**
- * Filter meals to exclude allergens
+ * Filter meals array to exclude allergens (NEW format)
+ */
+const filterMealsArrayByAllergies = (meals, allergies) => {
+  // Map allergy names to common ingredient keywords
+  const allergenKeywords = {
+    peanuts: ['peanut', 'peanuts'],
+    tree_nuts: ['almond', 'cashew', 'walnut', 'pecan', 'pistachio', 'hazelnut', 'macadamia', 'nut'],
+    shellfish: ['shrimp', 'crab', 'lobster', 'shellfish', 'prawn', 'crayfish'],
+    fish: ['salmon', 'tuna', 'cod', 'fish', 'tilapia', 'trout', 'halibut'],
+    eggs: ['egg', 'eggs'],
+    dairy: ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'dairy', 'whey', 'casein'],
+    soy: ['soy', 'tofu', 'tempeh', 'edamame', 'miso'],
+    wheat: ['wheat', 'flour', 'bread', 'pasta', 'couscous'],
+    sesame: ['sesame', 'tahini']
+  };
+
+  return meals.filter(meal => {
+    // Check if any ingredient contains allergen
+    const ingredientsText = meal.ingredients?.join(' ').toLowerCase() || '';
+
+    for (const allergy of allergies) {
+      // Handle custom allergies (format: "other:custom_name")
+      if (allergy.startsWith('other:')) {
+        const customAllergen = allergy.split(':')[1].toLowerCase();
+        if (ingredientsText.includes(customAllergen)) {
+          return false; // Exclude this meal
+        }
+      } else if (allergenKeywords[allergy]) {
+        // Check predefined allergens
+        for (const keyword of allergenKeywords[allergy]) {
+          if (ingredientsText.includes(keyword)) {
+            return false; // Exclude this meal
+          }
+        }
+      }
+    }
+
+    return true; // Include this meal
+  });
+};
+
+/**
+ * Filter meals to exclude allergens (LEGACY format - object with meal types)
  */
 const filterMealsByAllergies = (meals, allergies) => {
   // Map allergy names to common ingredient keywords
@@ -410,26 +506,30 @@ const filterMealsByAllergies = (meals, allergies) => {
 };
 
 /**
- * Get a random "Meal of the Day" for user
+ * Get "Meal of the Day" for user
+ * NEW: Returns meal for current day of week (Monday = day 1, etc.)
+ * Falls back to random meal if day metadata not available
  */
 export const getMealOfTheDay = async (userProfile, mealType = null) => {
   const meals = await getMealsForUser(userProfile);
 
-  if (!meals) {
+  if (!meals || meals.length === 0) {
     return null;
   }
 
-  // If mealType specified, get from that type, otherwise random
-  const availableMealTypes = mealType ? [mealType] : MEAL_TYPES;
-  const randomMealType = availableMealTypes[Math.floor(Math.random() * availableMealTypes.length)];
-  const mealsOfType = meals[randomMealType];
+  // Get current day of week (1-7, Monday = 1)
+  const currentDayOfWeek = new Date().getDay();
+  const dayNumber = currentDayOfWeek === 0 ? 7 : currentDayOfWeek; // Sunday = 7
 
-  if (!mealsOfType || mealsOfType.length === 0) {
-    return null;
+  // Try to find meal for today
+  const todaysMeal = meals.find(meal => meal.dayOfWeek === dayNumber);
+
+  if (todaysMeal) {
+    return todaysMeal;
   }
 
-  // Return random meal from the type
-  return mealsOfType[Math.floor(Math.random() * mealsOfType.length)];
+  // Fallback: return random meal
+  return meals[Math.floor(Math.random() * meals.length)];
 };
 
 export default {
@@ -437,7 +537,8 @@ export default {
   getCategoryId,
   getAllCategories,
   getUserCategory,
-  generateCategoryMeals,
+  generateWeeklyMeals, // NEW: 7 meals per week
+  generateCategoryMeals, // LEGACY: 28 meals
   generateAllCategoryMeals,
   getMealsForUser,
   getMealOfTheDay,
