@@ -16,6 +16,7 @@ import LoadingScreen from './components/LoadingScreen';
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
 
+
 // Lazy loading wrapper with error recovery
 const lazyWithRetry = (componentImport) => {
   return lazy(() => {
@@ -38,10 +39,29 @@ const lazyWithRetry = (componentImport) => {
       };
       attemptLoad();
     });
+
+// Retry logic for failed lazy imports
+const retryImport = (importFn, retries = 3, delay = 1000) => {
+  return new Promise((resolve, reject) => {
+    importFn()
+      .then(resolve)
+      .catch((error) => {
+        if (retries === 0) {
+          reject(error);
+          return;
+        }
+        setTimeout(() => {
+          retryImport(importFn, retries - 1, delay * 2)
+            .then(resolve)
+            .catch(reject);
+        }, delay);
+      });
+main
   });
 };
 
 // Lazy-loaded pages for code splitting with retry logic
+claude/fix-loading-errors-01GLYDhhfiK7vtGoDed6TWX7
 const OnboardingFlowV2 = lazyWithRetry(() => import('./components/OnboardingV2/OnboardingFlowV2'));
 const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
 const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
@@ -58,10 +78,30 @@ const BarcodeScanner = lazyWithRetry(() => import('./pages/BarcodeScanner'));
 const Login = lazyWithRetry(() => import('./pages/Login'));
 const Register = lazyWithRetry(() => import('./pages/Register'));
 
+const OnboardingFlowV2 = lazy(() => retryImport(() => import('./components/OnboardingV2/OnboardingFlowV2')));
+const Onboarding = lazy(() => retryImport(() => import('./pages/Onboarding')));
+const Dashboard = lazy(() => retryImport(() => import('./pages/Dashboard')));
+const MealAnalyzer = lazy(() => retryImport(() => import('./pages/MealAnalyzer')));
+const MealPlanner = lazy(() => retryImport(() => import('./pages/MealPlanner')));
+const Goals = lazy(() => retryImport(() => import('./pages/Goals')));
+const Favourites = lazy(() => retryImport(() => import('./pages/Favourites')));
+const Achievements = lazy(() => retryImport(() => import('./pages/Achievements')));
+const Analytics = lazy(() => retryImport(() => import('./pages/Analytics')));
+const History = lazy(() => retryImport(() => import('./pages/History')));
+const Account = lazy(() => retryImport(() => import('./pages/Account')));
+const GroceryList = lazy(() => retryImport(() => import('./pages/GroceryList')));
+const BarcodeScanner = lazy(() => retryImport(() => import('./pages/BarcodeScanner')));
+const Login = lazy(() => retryImport(() => import('./pages/Login')));
+const Register = lazy(() => retryImport(() => import('./pages/Register')));
+main
+
 // Loading fallback component
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+  <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="text-center">
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <p className="text-gray-600 dark:text-gray-400 text-sm">Loading page...</p>
+    </div>
   </div>
 );
 
@@ -120,33 +160,47 @@ function AppContent() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Dark mode
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-
-    // Rehydrate auth state from localStorage
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    const onboardingComplete = localStorage.getItem('onboardingComplete') === 'true';
-
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        dispatch(setCredentials({ user, token }));
-      } catch (error) {
-        // Invalid user data in localStorage, clear and log
-        logError('app.rehydrate', 'Failed to parse user data from localStorage', { error: error.message });
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+    // Wrap everything in a try-catch for maximum safety
+    try {
+      // Dark mode
+      const darkMode = localStorage.getItem('darkMode') === 'true';
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
-    }
 
-    if (onboardingComplete) {
-      dispatch(setOnboardingComplete(true));
+      // Rehydrate auth state from localStorage
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      const onboardingComplete = localStorage.getItem('onboardingComplete') === 'true';
+
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          // Validate user object has required fields
+          if (user && typeof user === 'object' && user.id) {
+            dispatch(setCredentials({ user, token }));
+          } else {
+            // Invalid user object, clear it
+            logError('app.rehydrate', 'Invalid user object in localStorage', { user });
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+          }
+        } catch (error) {
+          // Invalid user data in localStorage, clear and log
+          logError('app.rehydrate', 'Failed to parse user data from localStorage', { error: error.message });
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+        }
+      }
+
+      if (onboardingComplete) {
+        dispatch(setOnboardingComplete(true));
+      }
+    } catch (error) {
+      // Catch any unexpected errors during initialization
+      logError('app.init', 'Unexpected error during app initialization', { error: error.message });
     }
 
     // Safety timeout so we NEVER get stuck on loader

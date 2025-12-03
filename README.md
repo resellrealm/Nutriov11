@@ -33,14 +33,17 @@ A comprehensive nutrition tracking and meal planning application built with Reac
 - **Progress Tracking**: Average daily calories, meals logged, daily goals
 
 ### Recipe System
-- **62 Built-in Recipes**: Professionally crafted meals covering breakfast, lunch, dinner, and snacks
-- **Smart Personalization Engine**:
-  - Creates "user categories" based on dietary preferences
-  - Example: Vegetarian + No allergies = Category A (20 compatible recipes)
-  - Example: Vegetarian + Nut allergy = Category B (15 compatible recipes)
-  - Example: No restrictions = Category C (all 62 recipes)
-  - Users in same category get same daily recommendation
-- **Daily Meal Rotation**: Different recommended meal each day within your compatible recipes
+- **AI-Powered Personalized Meals** (Premium):
+  - **72 User Categories**: Based on 6 goals × 12 dietary types
+  - **7 AI-Generated Meals Per Week**: One personalized meal per day
+  - **Automatic Weekly Generation**: Fresh meals every Sunday at 12pm UTC
+  - **Smart Filtering**: Automatically excludes your allergens
+  - **Goal-Optimized**: Nutrition tailored to your specific health goals
+  - **Total: 504 AI Meals** generated weekly across all categories
+- **28 Static Backup Recipes**: Professionally crafted fallback meals (Free)
+  - 7 breakfast, 7 lunch, 7 dinner, 7 snacks
+  - Available to all users when AI meals unavailable
+- **Daily Meal Recommendations**: Different recommended meal each day
 - **Nutritional Info**: Calories, protein, carbs, fat, fiber for every recipe
 - **Detailed Instructions**: Step-by-step cooking instructions
 - **Ingredient Lists**: Complete ingredient lists for grocery planning
@@ -294,7 +297,33 @@ service firebase.storage {
 
 6. Click **Publish**
 
-### Step 4: Start Development Server
+### Step 4: Configure GitHub Secrets (For AI Meal Generation)
+
+To enable automatic weekly AI meal generation, add these secrets to your GitHub repository:
+
+1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+2. Click **New repository secret** and add each of these:
+
+```
+VITE_GEMINI_API_KEY=your_gemini_api_key
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789012
+VITE_FIREBASE_APP_ID=1:123456789012:web:abcdef123456
+```
+
+**What This Does:**
+- GitHub Actions will run every Sunday at 12:00 PM UTC
+- Generates 7 personalized meals for all 72 user categories
+- Stores meals in Firestore for the week
+- Meals automatically appear in premium users' dashboards
+
+**Manual Trigger:**
+- Go to **Actions** tab → **Generate Weekly AI Meals** → **Run workflow**
+
+### Step 5: Start Development Server
 
 ```bash
 npm run dev
@@ -379,7 +408,8 @@ After setup, test these features to ensure everything works:
 - [ ] Adds to food log
 
 ### 6. Recipes ✓
-- [ ] Browse 62 built-in recipes
+- [ ] Browse AI-generated personalized meals (Premium)
+- [ ] Browse 28 static recipes (Free)
 - [ ] Create custom recipe (saves to Firestore)
 - [ ] Search recipes
 
@@ -552,12 +582,59 @@ All errors are logged through a centralized `errorLogger` utility:
 - **Tree Shaking**: Unused code automatically removed
 - **Production Build**: Console statements stripped via esbuild config
 
+## AI Meal Generation System
+
+Nutrio uses an intelligent AI-powered meal generation system that creates personalized weekly meal plans:
+
+### How It Works
+
+**1. User Categories (72 Total)**
+- **6 Health Goals**: Weight loss, muscle gain, maintenance, improved health, condition management, athletic performance
+- **12 Dietary Types**: Omnivore, vegetarian, vegan, pescatarian, paleo, keto, low-carb, gluten-free, dairy-free, halal, kosher, none
+- **Category Matching**: Users are assigned to one of 72 categories based on their onboarding responses
+
+**2. Weekly Generation**
+- **Automatic Scheduling**: GitHub Actions runs every Sunday at 12:00 PM UTC
+- **AI Generation**: Google Gemini AI creates 7 unique meals per category
+- **Random Meal Types**: Each day gets a random meal type (breakfast, lunch, or dinner)
+- **Cost Efficiency**: 504 total AI calls per week (72 categories × 7 meals)
+
+**3. Personalization**
+- **Goal-Optimized Nutrition**: Meals tailored to your specific health goals
+- **Dietary Compliance**: Strict adherence to dietary restrictions
+- **Allergy Filtering**: Automatically excludes allergens from recommendations
+- **Daily Rotation**: Different meal each day of the week
+
+**4. Fallback System**
+- **28 Static Recipes**: Hand-crafted backup recipes (7 per meal type)
+- **Graceful Degradation**: Falls back to static recipes if AI meals unavailable
+- **Universal Access**: Static recipes available to all users
+
+## Premium vs Free Features
+
+### 🌟 Premium Features
+- **AI Personalized Meals**: 7 AI-generated meals per week based on your goals & diet
+- **Meal Planner Access**: Full access to weekly meal planning
+- **Grocery List Generation**: Auto-generate shopping lists from meal plans
+- **20 Daily AI Scans**: Analyze meal photos with AI (vs 2 for free)
+- **Advanced Analytics**: Comprehensive nutrition insights and trends
+- **No Ads**: Ad-free experience
+
+### 🆓 Free Features
+- **28 Static Recipes**: Browse curated breakfast, lunch, dinner, and snacks
+- **Food Logging**: Manual entry and barcode scanning
+- **2 Daily AI Scans**: Limited meal photo analysis
+- **Dashboard**: Basic nutrition tracking and charts
+- **Goals Tracking**: Set and monitor your health goals
+- **Achievements**: Unlock achievements for consistency
+- **Custom Recipes**: Create and save your own recipes
+
 ## Version
 
-**11.0.0** - Complete nutrition tracking app with production-ready code quality
+**11.0.0** - Complete nutrition tracking app with AI-powered personalized meals
 
 ### Core Features
-- 62 built-in recipes with daily meal recommendations
+- AI-powered personalized meal generation (7 meals per week, 72 categories)
 - 20-step comprehensive onboarding flow
 - AI-powered meal photo analysis (Google Gemini)
 - Barcode scanning (Open Food Facts API v2)
