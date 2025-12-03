@@ -43,7 +43,7 @@ if (missingVars.length > 0) {
 // Initialize Firebase
 try {
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  getFirestore(app);
   console.log('✅ Firebase initialized successfully');
 } catch (error) {
   console.error('❌ Failed to initialize Firebase:', error);

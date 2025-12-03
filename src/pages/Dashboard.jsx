@@ -827,26 +827,26 @@ const Dashboard = () => {
                   )}
                 </div>
               )}
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-3">
+                <button
+                  onClick={() => navigate('/meal-planner')}
+                  className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition text-sm"
+                >
+                  View All Meals
+                </button>
+                <button
+                  onClick={() => {
+                    // Copy recipe to clipboard
+                    const recipeText = `${recommendedMeal.name}\n\nIngredients:\n${recommendedMeal.ingredients?.join('\n') || ''}\n\nInstructions:\n${recommendedMeal.instructions?.map((inst, i) => `${i + 1}. ${inst}`).join('\n') || ''}`;
+                    navigator.clipboard.writeText(recipeText);
+                    toast.success('Recipe copied to clipboard!');
+                  }}
+                  className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm"
+                >
+                  Copy Recipe
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-3">
-            <button
-              onClick={() => navigate('/meal-planner')}
-              className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition text-sm"
-            >
-              View All Meals
-            </button>
-            <button
-              onClick={() => {
-                // Copy recipe to clipboard
-                const recipeText = `${recommendedMeal.name}\n\nIngredients:\n${recommendedMeal.ingredients?.join('\n') || ''}\n\nInstructions:\n${recommendedMeal.instructions?.map((inst, i) => `${i + 1}. ${inst}`).join('\n') || ''}`;
-                navigator.clipboard.writeText(recipeText);
-                toast.success('Recipe copied to clipboard!');
-              }}
-              className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm"
-            >
-              Copy Recipe
-            </button>
           </div>
           )}
         </motion.div>
