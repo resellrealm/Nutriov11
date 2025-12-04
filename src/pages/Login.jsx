@@ -5,8 +5,9 @@ import { motion } from 'framer-motion';
 import { Sparkles, Mail, Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { loginUser } from '../services/authService';
-import { setCredentials, setOnboardingComplete } from '../store/authSlice';
+import { setCredentials, setOnboardingComplete, setPremiumStatus } from '../store/authSlice';
 import { isFirebaseConfigured } from '../config/firebase';
+import { updatePremiumStatus } from '../services/userService';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -45,6 +46,9 @@ const Login = () => {
       const result = await loginUser(formData.email, formData.password);
 
       if (result.success) {
+        // Check if user has admin access from paywall
+        const hasAdminAccess = sessionStorage.getItem('adminAccess') === 'true';
+
         // Store auth data
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
@@ -58,7 +62,34 @@ const Login = () => {
 
         dispatch(setOnboardingComplete(result.onboardingComplete));
 
-        toast.success('Welcome back!');
+        // Load existing premium status from Firestore
+        if (result.isPremium) {
+          dispatch(setPremiumStatus(true));
+          localStorage.setItem('isPremium', 'true');
+          localStorage.setItem('planTier', result.planTier || 'premium');
+        }
+
+        // If admin access, grant premium status (or upgrade existing user)
+        if (hasAdminAccess) {
+          // Update premium status in Firestore
+          const premiumResult = await updatePremiumStatus(result.user.id, true, 'R9X2LQ7B1V8T3YP');
+
+          if (premiumResult.success) {
+            // Update Redux and localStorage
+            dispatch(setPremiumStatus(true));
+            localStorage.setItem('isPremium', 'true');
+            localStorage.setItem('planTier', 'premium');
+
+            toast.success('🎉 Welcome back with Premium access!');
+
+            // Clear admin access flag
+            sessionStorage.removeItem('adminAccess');
+          } else {
+            toast.success('Welcome back!');
+          }
+        } else {
+          toast.success('Welcome back!');
+        }
 
         // Navigate based on onboarding status
         if (result.onboardingComplete) {

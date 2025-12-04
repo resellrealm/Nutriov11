@@ -500,6 +500,35 @@ export const deleteProfilePhoto = async (userId) => {
   }
 };
 
+// Update premium status
+export const updatePremiumStatus = async (userId, isPremium, accessCode = null) => {
+  const configError = checkFirestoreConfig();
+  if (configError) return configError;
+
+  try {
+    const userRef = doc(db, 'users', userId);
+    const updates = {
+      subscription: {
+        status: isPremium ? 'premium' : 'free',
+        planTier: isPremium ? 'premium' : 'free',
+        activatedBy: accessCode ? 'admin_code' : 'payment',
+        activatedAt: serverTimestamp()
+      },
+      updatedAt: serverTimestamp()
+    };
+
+    if (accessCode) {
+      updates.subscription.accessCode = accessCode;
+    }
+
+    await updateDoc(userRef, updates);
+    return { success: true };
+  } catch (error) {
+    const errorCode = mapFirestoreErrorCode(error);
+    return createErrorResponse(errorCode);
+  }
+};
+
 export default {
   createUserProfile,
   getUserProfile,
@@ -508,6 +537,7 @@ export default {
   completeOnboarding,
   uploadProfilePhoto,
   deleteProfilePhoto,
+  updatePremiumStatus,
   calculateBMI,
   calculateTDEE,
   calculateMacros,

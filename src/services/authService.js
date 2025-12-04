@@ -157,7 +157,9 @@ export const loginUser = async (email, password) => {
         displayName: user.displayName
       },
       token: token,
-      onboardingComplete: profile.onboarding?.completed || false
+      onboardingComplete: profile.onboarding?.completed || false,
+      isPremium: profile.subscription?.status === 'premium' || false,
+      planTier: profile.subscription?.planTier || 'free'
     };
   } catch (error) {
     logError('authService.loginUser', error, { code: error.code });

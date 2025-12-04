@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Mail, Lock, User, Eye, EyeOff, AlertTriangle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { registerUser } from '../services/authService';
-import { setCredentials, setOnboardingComplete } from '../store/authSlice';
+import { setCredentials, setOnboardingComplete, setPremiumStatus } from '../store/authSlice';
 import { isFirebaseConfigured } from '../config/firebase';
+import { updatePremiumStatus } from '../services/userService';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -66,6 +67,9 @@ const Register = () => {
       const result = await registerUser(formData.email, formData.password, formData.name);
 
       if (result.success) {
+        // Check if user has admin access from paywall
+        const hasAdminAccess = sessionStorage.getItem('adminAccess') === 'true';
+
         // Store auth data
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
@@ -78,7 +82,27 @@ const Register = () => {
         }));
         dispatch(setOnboardingComplete(false));
 
-        toast.success('Account created! Let\'s set up your profile.');
+        // If admin access, grant premium status
+        if (hasAdminAccess) {
+          // Update premium status in Firestore
+          const premiumResult = await updatePremiumStatus(result.user.id, true, 'R9X2LQ7B1V8T3YP');
+
+          if (premiumResult.success) {
+            // Update Redux and localStorage
+            dispatch(setPremiumStatus(true));
+            localStorage.setItem('isPremium', 'true');
+            localStorage.setItem('planTier', 'premium');
+
+            toast.success('🎉 Account created with Premium access!');
+
+            // Clear admin access flag
+            sessionStorage.removeItem('adminAccess');
+          } else {
+            toast.success('Account created! Let\'s set up your profile.');
+          }
+        } else {
+          toast.success('Account created! Let\'s set up your profile.');
+        }
 
         // Navigate to onboarding
         navigate('/onboarding');
