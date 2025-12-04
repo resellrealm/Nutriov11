@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trophy, Star, Flame, TrendingUp, Target, Calendar, Utensils, Award, CheckCircle, Zap, Heart, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -10,12 +9,10 @@ import {
   calculateAchievementStats,
   checkAndUpdateAchievements,
   getAchievementCounts,
-  canUnlockAchievement,
   ACHIEVEMENT_DEFINITIONS
 } from '../services/achievementsService';
 
 const Achievements = () => {
-  const navigate = useNavigate();
   const userId = useSelector(state => state.auth.user?.id);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');

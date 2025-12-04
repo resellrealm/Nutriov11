@@ -5,11 +5,11 @@ import { useDispatch } from 'react-redux';
 import {
   Crown, Check, X, Sparkles, Zap, Target, TrendingUp,
   BarChart3, Calendar, ShoppingCart, Utensils, Camera,
-  Award, Lock, Star, ChevronRight, Shield, Infinity, CreditCard,
+  Award, Lock, Star, ChevronRight, Shield, Infinity as InfinityIcon, CreditCard,
   Gift, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { setUser } from '../store/authSlice';
+import { setPremiumStatus } from '../store/authSlice';
 
 const Paywall = () => {
   const navigate = useNavigate();
@@ -100,7 +100,7 @@ const Paywall = () => {
 
       // TODO: Implement actual payment processing and update user in Firebase
       // For now, just update Redux state
-      dispatch(setUser({ isPremium: true }));
+      dispatch(setPremiumStatus(true));
 
       setIsProcessing(false);
 
@@ -116,7 +116,7 @@ const Paywall = () => {
 
     if (validCodes.includes(promoCode.toUpperCase())) {
       toast.success('🎉 Promo code accepted! You now have full access!');
-      dispatch(setUser({ isPremium: true }));
+      dispatch(setPremiumStatus(true));
       setShowPromoModal(false);
       setTimeout(() => navigate('/dashboard'), 1500);
     } else {
@@ -201,7 +201,7 @@ const Paywall = () => {
       color: 'from-purple-400 to-indigo-500'
     },
     {
-      icon: <Infinity className="w-6 h-6" />,
+      icon: <InfinityIcon className="w-6 h-6" />,
       title: 'Ad-Free Experience',
       description: 'Enjoy Nutrio without any interruptions',
       color: 'from-green-400 to-teal-500'
@@ -437,7 +437,7 @@ const Paywall = () => {
             <span className="text-sm font-medium">Secure Payment</span>
           </div>
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <Infinity className="w-5 h-5 text-blue-500" />
+            <InfinityIcon className="w-5 h-5 text-blue-500" />
             <span className="text-sm font-medium">Cancel Anytime</span>
           </div>
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">

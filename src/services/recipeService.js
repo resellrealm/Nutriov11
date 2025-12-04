@@ -15,6 +15,7 @@ import {
   ERROR_CODES,
   createErrorResponse
 } from '../utils/errorCodes';
+import { logError, logWarning } from '../utils/errorLogger';
 import {
   getMealsForUser,
   getMealOfTheDay as getAIMealOfTheDay
@@ -600,7 +601,7 @@ export const getAllRecipes = async (userProfile = null) => {
         }
       }
     } catch (error) {
-      console.warn('Failed to fetch AI meals, falling back to static recipes:', error);
+      logWarning('recipeService.getAllRecipes', 'Failed to fetch AI meals, falling back to static recipes', { error: error.message });
     }
   }
 
@@ -628,7 +629,7 @@ export const getRecipeById = async (recipeId, userProfile = null) => {
         if (aiRecipe) return aiRecipe;
       }
     } catch (error) {
-      console.warn('Error fetching AI recipe:', error);
+      logWarning('recipeService.getRecipeById', 'Error fetching AI recipe', { error: error.message, recipeId });
     }
   }
 
@@ -664,7 +665,7 @@ export const getMealOfTheDay = async (userProfile = null) => {
       const aiMeal = await getAIMealOfTheDay(userProfile);
       if (aiMeal) return aiMeal;
     } catch (error) {
-      console.warn('Failed to fetch AI meal of the day, using static recipe:', error);
+      logWarning('recipeService.getMealOfTheDay', 'Failed to fetch AI meal of the day, using static recipe', { error: error.message });
     }
   }
 
@@ -829,7 +830,7 @@ export const getPersonalizedMealOfTheDay = (userProfile) => {
 
   // If no recipes match preferences, fall back to all recipes
   if (compatibleRecipes.length === 0) {
-    console.warn('No recipes match user preferences, showing all recipes');
+    logWarning('recipeService.getPersonalizedMealOfTheDay', 'No recipes match user preferences, showing all recipes');
     return getMealOfTheDay();
   }
 
@@ -914,7 +915,7 @@ export const saveUserRecipe = async (userId, recipeData) => {
       data: { id: docRef.id, ...recipe }
     };
   } catch (error) {
-    console.error('Error saving user recipe:', error);
+    logError('recipeService.saveUserRecipe', error, { userId });
     return {
       success: false,
       error: error.message
@@ -948,7 +949,7 @@ export const getUserRecipes = async (userId) => {
       data: recipes
     };
   } catch (error) {
-    console.error('Error fetching user recipes:', error);
+    logError('recipeService.getUserRecipes', error, { userId });
     return {
       success: false,
       error: error.message
@@ -975,7 +976,7 @@ export const updateUserRecipe = async (userId, recipeId, updates) => {
       success: true
     };
   } catch (error) {
-    console.error('Error updating user recipe:', error);
+    logError('recipeService.updateUserRecipe', error, { userId, recipeId });
     return {
       success: false,
       error: error.message
@@ -998,7 +999,7 @@ export const deleteUserRecipe = async (userId, recipeId) => {
       success: true
     };
   } catch (error) {
-    console.error('Error deleting user recipe:', error);
+    logError('recipeService.deleteUserRecipe', error, { userId, recipeId });
     return {
       success: false,
       error: error.message
@@ -1026,7 +1027,7 @@ export const getAllUserAndBuiltInRecipes = async (userId, userProfile = null) =>
       }
     };
   } catch (error) {
-    console.error('Error fetching all recipes:', error);
+    logError('recipeService.getAllUserRecipes', error, { userId });
     return {
       success: false,
       error: error.message
@@ -1070,7 +1071,7 @@ export const saveMealAsRecipe = async (userId, mealData) => {
 
     return await saveUserRecipe(userId, recipeData);
   } catch (error) {
-    console.error('Error saving meal as recipe:', error);
+    logError('recipeService.saveMealAsRecipe', error, { userId });
     return {
       success: false,
       error: error.message
@@ -1109,7 +1110,7 @@ export const markRecipeCooked = async (userId, recipeId) => {
       message: 'Recipe marked as cooked'
     };
   } catch (error) {
-    console.error('Error marking recipe as cooked:', error);
+    logError('recipeService.markRecipeAsCooked', error, { userId, recipeId });
     return {
       success: false,
       error: error.message
@@ -1144,7 +1145,7 @@ export const rateRecipe = async (userId, recipeId, rating) => {
       message: 'Recipe rated successfully'
     };
   } catch (error) {
-    console.error('Error rating recipe:', error);
+    logError('recipeService.rateRecipe', error, { userId, recipeId, rating });
     return {
       success: false,
       error: error.message
@@ -1191,7 +1192,7 @@ export const getRecipeStats = async (userId) => {
       data: stats
     };
   } catch (error) {
-    console.error('Error getting recipe stats:', error);
+    logError('recipeService.getRecipeStats', error, { userId });
     return {
       success: false,
       error: error.message

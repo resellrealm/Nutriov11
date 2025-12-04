@@ -12,6 +12,7 @@ import {
   mapAuthErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Authentication Service
@@ -75,7 +76,7 @@ export const registerUser = async (email, password, fullName = '') => {
     );
 
     if (!profileResult.success) {
-      console.error('Profile creation failed:', profileResult.error);
+      logError('authService.registerUser', 'Profile creation failed', { error: profileResult.error });
       throw new Error(profileResult.error);
     }
 
@@ -92,7 +93,7 @@ export const registerUser = async (email, password, fullName = '') => {
       onboardingComplete: false
     };
   } catch (error) {
-    console.error('Registration error:', error);
+    logError('authService.registerUser', error, { code: error.code });
     const errorCode = mapAuthErrorCode(error.code);
     const errorResponse = createErrorResponse(errorCode, error.message);
     return errorResponse;
@@ -132,11 +133,11 @@ export const loginUser = async (email, password) => {
       if (createResult.success) {
         profileResult = createResult;
       } else {
-        console.error('Failed to create profile:', createResult.error);
+        logError('authService.loginUser', 'Failed to create profile', { error: createResult.error });
         throw new Error('Failed to create user profile');
       }
     } else if (!profileResult.success) {
-      console.error('Failed to load profile:', profileResult.error);
+      logError('authService.loginUser', 'Failed to load profile', { error: profileResult.error });
       throw new Error('Failed to load user profile');
     }
 
@@ -159,7 +160,7 @@ export const loginUser = async (email, password) => {
       onboardingComplete: profile.onboarding?.completed || false
     };
   } catch (error) {
-    console.error('Login error:', error);
+    logError('authService.loginUser', error, { code: error.code });
 
     // Handle network-specific errors
     if (error.message && error.message.includes('timed out')) {

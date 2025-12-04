@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,11 +21,12 @@ import {
   Zap
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { MAX_FILE_SIZE, ERROR_MESSAGES } from '../config/constants';
+import { MAX_FILE_SIZE, ERROR_MESSAGES, MAX_DAILY_SCANS } from '../config/constants';
 import { analyzeMealPhoto, isGeminiConfigured } from '../services/geminiService';
 import { logFoodItem } from '../services/foodLogService';
 import onlineFoodResearchService from '../services/onlineFoodResearchService';
 import scanFeedbackService from '../services/scanFeedbackService';
+import { logError } from '../utils/errorLogger';
 
 // Helper function to generate unique scan IDs
 const generateScanId = () => {
@@ -33,9 +34,29 @@ const generateScanId = () => {
 };
 
 const MealAnalyzer = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const userId = useSelector(state => state.auth.user?.id);
+  const isPremium = useSelector(state => state.auth.isPremium);
+  const dailyScansUsed = useSelector(state => state.auth.dailyScansUsed);
+  const scanCooldownUntil = useSelector(state => state.auth.scanCooldownUntil);
+
+  // Calculate cooldown time left using state
+  const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
+
+  useEffect(() => {
+    const updateCooldown = () => {
+      if (scanCooldownUntil) {
+        const timeLeft = Math.max(0, Math.floor((scanCooldownUntil - Date.now()) / 1000));
+        setCooldownTimeLeft(timeLeft);
+      } else {
+        setCooldownTimeLeft(0);
+      }
+    };
+
+    updateCooldown();
+    const interval = setInterval(updateCooldown, 1000);
+    return () => clearInterval(interval);
+  }, [scanCooldownUntil]);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -150,7 +171,7 @@ const MealAnalyzer = () => {
               enhancedResult = { ...researchedData, scanId };
               toast.success('Enhanced with online research! 🎉', { duration: 2000 });
             } catch (error) {
-              console.error('Online research failed:', error);
+              logError('MealAnalyzer.handleAnalyze', 'Online research failed', { error: error.message });
               enhancedResult = { ...enhancedResult, scanId };
             }
           } else {
