@@ -3,6 +3,8 @@
  * Integration with ModelsLab APIs for image analysis and generation
  */
 
+import { logError } from '../utils/errorLogger';
+
 const MODELSLAB_API_KEY = import.meta.env.VITE_MODELSLAB_API_KEY;
 const MODELSLAB_BASE_URL = 'https://modelslab.com/api/v6';
 
@@ -38,7 +40,7 @@ export const analyzeFoodImage = async (imageBase64OrUrl) => {
       error: data.message || 'Failed to analyze image',
     };
   } catch (error) {
-    console.error('ModelsLab API error:', error);
+    logError('modelsLabService.analyzeFoodImage', error, { imageProvided: !!imageBase64OrUrl });
     return {
       success: false,
       error: error.message,
@@ -86,7 +88,7 @@ export const generateRecipeImage = async (recipeName, style = 'professional') =>
       error: data.message || 'Failed to generate image',
     };
   } catch (error) {
-    console.error('ModelsLab image generation error:', error);
+    logError('modelsLabService.generateRecipeImage', error);
     return {
       success: false,
       error: error.message,
@@ -124,7 +126,7 @@ export const removeBackground = async (imageUrl) => {
       error: data.message || 'Failed to remove background',
     };
   } catch (error) {
-    console.error('ModelsLab background removal error:', error);
+    logError('modelsLabService.removeBackground', error, { imageUrl });
     return {
       success: false,
       error: error.message,
@@ -163,7 +165,7 @@ export const upscaleImage = async (imageUrl, scale = 2) => {
       error: data.message || 'Failed to upscale image',
     };
   } catch (error) {
-    console.error('ModelsLab upscale error:', error);
+    logError('modelsLabService.upscaleImage', error, { imageUrl, scale });
     return {
       success: false,
       error: error.message,

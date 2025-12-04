@@ -21,7 +21,7 @@ import {
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
-import { logError } from '../utils/errorLogger';
+import { logError, logWarning } from '../utils/errorLogger';
 
 /**
  * Progress Photos Service
@@ -100,7 +100,7 @@ export const uploadProgressPhoto = async (userId, file, metadata = {}) => {
       }
     };
   } catch (error) {
-    console.error('Error uploading progress photo:', error);
+    logError('progressPhotosService.uploadProgressPhoto', error, { userId, metadata });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -135,7 +135,7 @@ export const getProgressPhotos = async (userId) => {
       data: photos
     };
   } catch (error) {
-    console.error('Error getting progress photos:', error);
+    logError('progressPhotosService.getProgressPhotos', error, { userId });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -155,7 +155,7 @@ export const deleteProgressPhoto = async (photoId, userId, filename) => {
       try {
         await deleteObject(storageRef);
       } catch (storageError) {
-        console.warn('Error deleting file from storage (may not exist):', storageError);
+        logWarning('progressPhotosService.deleteProgressPhoto', 'Error deleting file from storage (may not exist)', { userId, filename, error: storageError.message });
       }
     }
 
@@ -217,7 +217,7 @@ export const getProgressSummary = async (userId) => {
       }
     };
   } catch (error) {
-    console.error('Error getting progress summary:', error);
+    logError('progressPhotosService.getProgressSummary', error, { userId });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -254,7 +254,7 @@ export const getPhotosInRange = async (userId, startDate, endDate) => {
       data: photos
     };
   } catch (error) {
-    console.error('Error getting photos in range:', error);
+    logError('progressPhotosService.getPhotosInRange', error, { userId, startDate, endDate });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }

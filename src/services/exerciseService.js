@@ -16,6 +16,7 @@ import {
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Exercise Tracking Service
@@ -112,7 +113,7 @@ export const logExercise = async (userId, exerciseData, userWeight = 70) => {
       }
     };
   } catch (error) {
-    console.error('Error logging exercise:', error);
+    logError('exerciseService.logExercise', error, { userId, exerciseData });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -160,7 +161,7 @@ export const getExercisesForDate = async (userId, date) => {
       }
     };
   } catch (error) {
-    console.error('Error getting exercises:', error);
+    logError('exerciseService.getExercisesForDate', error, { userId, date });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -221,7 +222,7 @@ export const getExerciseHistory = async (userId, startDate, endDate) => {
       }
     };
   } catch (error) {
-    console.error('Error getting exercise history:', error);
+    logError('exerciseService.getExerciseHistory', error, { userId, startDate, endDate });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -246,7 +247,7 @@ export const updateExercise = async (exerciseId, updates) => {
       data: { id: exerciseId, ...updates }
     };
   } catch (error) {
-    console.error('Error updating exercise:', error);
+    logError('exerciseService.updateExercise', error, { exerciseId, updates });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -266,7 +267,7 @@ export const deleteExercise = async (exerciseId) => {
       data: { id: exerciseId }
     };
   } catch (error) {
-    console.error('Error deleting exercise:', error);
+    logError('exerciseService.deleteExercise', error, { exerciseId });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -328,7 +329,7 @@ export const getWeeklySummary = async (userId) => {
       }
     };
   } catch (error) {
-    console.error('Error getting weekly summary:', error);
+    logError('exerciseService.getWeeklySummary', error, { userId });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }

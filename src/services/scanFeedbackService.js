@@ -9,6 +9,7 @@ import {
   orderBy,
   limit
 } from 'firebase/firestore';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Service for managing scan feedback and analytics
@@ -56,7 +57,7 @@ class ScanFeedbackService {
 
       return docRef.id;
     } catch (error) {
-      console.error('Error submitting scan feedback:', error);
+      logError('scanFeedbackService.submitFeedback', error, { feedbackData });
       throw error;
     }
   }
@@ -102,7 +103,7 @@ class ScanFeedbackService {
         basicScans: feedbacks.filter(f => !f.isPremium).length
       };
     } catch (error) {
-      console.error('Error getting feedback stats:', error);
+      logError('scanFeedbackService.getUserFeedbackStats', error, { userId });
       throw error;
     }
   }
@@ -134,7 +135,7 @@ class ScanFeedbackService {
         improvementDelta: Math.round((premiumAccuracy - basicAccuracy) * 10) / 10
       };
     } catch (error) {
-      console.error('Error getting global stats:', error);
+      logError('scanFeedbackService.getGlobalStats', error);
       throw error;
     }
   }
@@ -159,7 +160,7 @@ class ScanFeedbackService {
         ...doc.data()
       }));
     } catch (error) {
-      console.error('Error getting incorrect scans:', error);
+      logError('scanFeedbackService.getRecentIncorrectScans', error, { limitCount });
       throw error;
     }
   }

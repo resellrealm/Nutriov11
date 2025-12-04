@@ -1,5 +1,6 @@
 import { db } from '../config/firebase';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Goals Service - Manages user nutrition goals and targets
@@ -28,7 +29,7 @@ export const getUserGoals = async (userId) => {
       };
     }
   } catch (error) {
-    console.error('Error fetching goals:', error);
+    logError('goalsService.getUserGoals', error, { userId });
     return {
       success: false,
       error: error.message
@@ -68,7 +69,7 @@ export const saveUserGoals = async (userId, goals) => {
       message: 'Goals saved successfully'
     };
   } catch (error) {
-    console.error('Error saving goals:', error);
+    logError('goalsService.saveUserGoals', error, { userId, goals });
     return {
       success: false,
       error: error.message

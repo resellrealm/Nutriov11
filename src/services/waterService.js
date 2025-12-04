@@ -15,6 +15,7 @@ import {
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Water Tracking Service
@@ -54,7 +55,7 @@ export const logWaterIntake = async (userId, date, glasses) => {
       data: waterEntry
     };
   } catch (error) {
-    console.error('Error logging water intake:', error);
+    logError('waterService.logWaterIntake', error, { userId, date, glasses });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -87,7 +88,7 @@ export const getWaterIntake = async (userId, date) => {
       };
     }
   } catch (error) {
-    console.error('Error getting water intake:', error);
+    logError('waterService.getWaterIntake', error, { userId, date });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -124,7 +125,7 @@ export const getWaterHistory = async (userId, startDate, endDate) => {
       data: history
     };
   } catch (error) {
-    console.error('Error getting water history:', error);
+    logError('waterService.getWaterHistory', error, { userId, startDate, endDate });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -188,7 +189,7 @@ export const getWeeklySummary = async (userId) => {
       }
     };
   } catch (error) {
-    console.error('Error getting weekly summary:', error);
+    logError('waterService.getWeeklySummary', error, { userId });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -210,7 +211,7 @@ export const incrementWater = async (userId, date) => {
     const currentGlasses = currentResult.data.glasses || 0;
     return await logWaterIntake(userId, date, currentGlasses + 1);
   } catch (error) {
-    console.error('Error incrementing water:', error);
+    logError('waterService.incrementWater', error, { userId, date });
     return createErrorResponse(ERROR_CODES.DB_READ_ERROR);
   }
 };
@@ -231,7 +232,7 @@ export const decrementWater = async (userId, date) => {
     const currentGlasses = currentResult.data.glasses || 0;
     return await logWaterIntake(userId, date, Math.max(0, currentGlasses - 1));
   } catch (error) {
-    console.error('Error decrementing water:', error);
+    logError('waterService.decrementWater', error, { userId, date });
     return createErrorResponse(ERROR_CODES.DB_READ_ERROR);
   }
 };

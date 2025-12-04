@@ -16,6 +16,7 @@ import {
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
+import { logError } from '../utils/errorLogger';
 
 // Helper to check if Firestore is available
 const checkFirestoreConfig = () => {
@@ -89,7 +90,7 @@ export const logFoodItem = async (userId, foodData) => {
       }
     };
   } catch (error) {
-    console.error('Error logging food item:', error);
+    logError('foodLogService.logFoodItem', error, { userId, foodData });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -118,7 +119,7 @@ export const getFoodLogByDate = async (userId, date) => {
 
     return { success: true, data: entries };
   } catch (error) {
-    console.error('Error getting food log:', error);
+    logError('foodLogService.getFoodLogByDate', error, { userId, date });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -149,7 +150,7 @@ export const getFoodLogByDateRange = async (userId, startDate, endDate) => {
 
     return { success: true, data: entries };
   } catch (error) {
-    console.error('Error getting food log by range:', error);
+    logError('foodLogService.getFoodLogByDateRange', error, { userId, startDate, endDate });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -214,7 +215,7 @@ export const getDailyTotals = async (userId, date) => {
       }
     };
   } catch (error) {
-    console.error('Error calculating daily totals:', error);
+    logError('foodLogService.getDailyTotals', error, { userId, date });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -236,7 +237,7 @@ export const updateFoodLogEntry = async (entryId, updates) => {
 
     return { success: true };
   } catch (error) {
-    console.error('Error updating food log entry:', error);
+    logError('foodLogService.updateFoodLogEntry', error, { entryId, updates });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -253,7 +254,7 @@ export const deleteFoodLogEntry = async (entryId) => {
     await deleteDoc(doc(db, 'foodLog', entryId));
     return { success: true };
   } catch (error) {
-    console.error('Error deleting food log entry:', error);
+    logError('foodLogService.deleteFoodLogEntry', error, { entryId });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -315,7 +316,7 @@ export const getWeeklySummary = async (userId) => {
       }
     };
   } catch (error) {
-    console.error('Error getting weekly summary:', error);
+    logError('foodLogService.getWeeklySummary', error, { userId });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }
@@ -396,7 +397,7 @@ export const exportToCSV = async (userId, startDate, endDate) => {
       rowCount: rows.length
     };
   } catch (error) {
-    console.error('Error exporting to CSV:', error);
+    logError('foodLogService.exportToCSV', error, { userId, startDate, endDate });
     const errorCode = mapFirestoreErrorCode(error);
     return createErrorResponse(errorCode);
   }

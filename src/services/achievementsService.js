@@ -1,5 +1,6 @@
 import { db } from '../config/firebase';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Achievements Service - Manages user achievements and gamification
@@ -598,7 +599,7 @@ export const getUserAchievements = async (userId) => {
       };
     }
   } catch (error) {
-    console.error('Error fetching achievements:', error);
+    logError('achievementsService.getUserAchievements', error, { userId });
     return {
       success: false,
       error: error.message
@@ -848,7 +849,7 @@ export const checkAndUpdateAchievements = async (userId, stats) => {
       }
     };
   } catch (error) {
-    console.error('Error updating achievements:', error);
+    logError('achievementsService.updateAchievements', error, { userId });
     return {
       success: false,
       error: error.message

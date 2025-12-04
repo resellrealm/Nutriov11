@@ -286,7 +286,6 @@ export const saveMealsToFirestore = async (weekNumber, categoryId, meals) => {
       updatedAt: new Date().toISOString()
     });
 
-    console.log(`✅ Saved ${categoryId} to Firestore`);
     return true;
   } catch (error) {
     logError('aiMealGenerationService.saveMealsToFirestore', error, { categoryId });
