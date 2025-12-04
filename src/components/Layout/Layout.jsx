@@ -18,9 +18,22 @@ const Layout = () => {
       '/goals': 'Goals',
       '/favourites': 'Favourites',
       '/achievements': 'Achievements',
+      '/analytics': 'Analytics',
       '/history': 'History',
       '/account': 'Account',
+      '/water': 'Water Tracker',
+      '/exercise': 'Exercise',
+      '/progress': 'Progress Photos',
+      '/settings': 'Settings',
+      '/calendar': 'Meal Calendar',
+      '/reports': 'Reports',
     };
+
+    // Handle dynamic routes
+    if (pathname.startsWith('/recipe/')) {
+      return 'Recipe Details';
+    }
+
     return titles[pathname] || 'Nutrio';
   };
 

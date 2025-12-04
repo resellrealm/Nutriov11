@@ -60,6 +60,15 @@ const Paywall = lazyWithRetry(() => import('./pages/Paywall'));
 const Login = lazyWithRetry(() => import('./pages/Login'));
 const Register = lazyWithRetry(() => import('./pages/Register'));
 
+// New pages
+const Water = lazyWithRetry(() => import('./pages/Water'));
+const Exercise = lazyWithRetry(() => import('./pages/Exercise'));
+const ProgressPhotos = lazyWithRetry(() => import('./pages/ProgressPhotos'));
+const Settings = lazyWithRetry(() => import('./pages/Settings'));
+const MealCalendar = lazyWithRetry(() => import('./pages/MealCalendar'));
+const Reports = lazyWithRetry(() => import('./pages/Reports'));
+const RecipeDetails = lazyWithRetry(() => import('./pages/RecipeDetails'));
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -242,6 +251,13 @@ function AppContent() {
                   <Route path="analytics" element={<Analytics />} />
                   <Route path="history" element={<History />} />
                   <Route path="account" element={<Account />} />
+                  <Route path="water" element={<Water />} />
+                  <Route path="exercise" element={<Exercise />} />
+                  <Route path="progress" element={<ProgressPhotos />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="calendar" element={<MealCalendar />} />
+                  <Route path="reports" element={<Reports />} />
+                  <Route path="recipe/:recipeId" element={<RecipeDetails />} />
                 </Route>
 
                 {/* 404 Catch-all Route */}

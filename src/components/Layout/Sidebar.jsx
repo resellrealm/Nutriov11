@@ -15,6 +15,12 @@ import {
   LogOut,
   X,
   BarChart3,
+  Droplet,
+  Dumbbell,
+  CameraIcon,
+  Settings as SettingsIcon,
+  Calendar,
+  FileText,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { logout } from '../../store/authSlice';
@@ -45,6 +51,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       color: 'text-purple-500',
     },
     {
+      path: '/calendar',
+      icon: Calendar,
+      label: 'Meal Calendar',
+      color: 'text-violet-500',
+    },
+    {
       path: '/grocery-list',
       icon: ShoppingCart,
       label: 'Grocery List',
@@ -55,6 +67,24 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: Target,
       label: 'Goals',
       color: 'text-orange-500',
+    },
+    {
+      path: '/water',
+      icon: Droplet,
+      label: 'Water Tracker',
+      color: 'text-blue-500',
+    },
+    {
+      path: '/exercise',
+      icon: Dumbbell,
+      label: 'Exercise',
+      color: 'text-red-500',
+    },
+    {
+      path: '/progress',
+      icon: CameraIcon,
+      label: 'Progress Photos',
+      color: 'text-pink-500',
     },
     {
       path: '/favourites',
@@ -75,16 +105,28 @@ const Sidebar = ({ isOpen, onClose }) => {
       color: 'text-indigo-500',
     },
     {
+      path: '/reports',
+      icon: FileText,
+      label: 'Reports',
+      color: 'text-slate-500',
+    },
+    {
       path: '/history',
       icon: HistoryIcon,
       label: 'History',
-      color: 'text-blue-500',
+      color: 'text-blue-600',
     },
     {
       path: '/account',
       icon: User,
       label: 'Account',
       color: 'text-gray-500',
+    },
+    {
+      path: '/settings',
+      icon: SettingsIcon,
+      label: 'Settings',
+      color: 'text-gray-600',
     },
   ];
 
