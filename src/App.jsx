@@ -59,7 +59,6 @@ const BarcodeScanner = lazyWithRetry(() => import('./pages/BarcodeScanner'));
 const Paywall = lazyWithRetry(() => import('./pages/Paywall'));
 const Login = lazyWithRetry(() => import('./pages/Login'));
 const Register = lazyWithRetry(() => import('./pages/Register'));
-const ToasterDemo = lazyWithRetry(() => import('./pages/ToasterDemo'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -192,9 +191,6 @@ function AppContent() {
             />
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* Demo Routes */}
-                <Route path="/toaster-demo" element={<ToasterDemo />} />
-
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
