@@ -472,7 +472,7 @@ Browser notifications work automatically - no additional setup required. Users c
 Even without API keys configured, you can still:
 
 - ✅ View the UI and navigation
-- ✅ See the 62 built-in recipes
+- ✅ See the 28 built-in static recipes
 - ✅ Test onboarding flow (data won't persist)
 - ✅ Explore dashboard layout
 
@@ -542,7 +542,7 @@ src/
 
 - **userService.js**: User profile management, onboarding data, calculated metrics (BMI, BMR, TDEE)
 - **foodLogService.js**: Food logging, daily/weekly nutrition summaries
-- **recipeService.js**: 62 built-in recipes, user custom recipes, meal of the day
+- **recipeService.js**: 28 built-in static recipes, user custom recipes, meal of the day, AI-generated personalized meals
 - **groceryListService.js**: Smart grocery list generation from recipes
 - **authService.js**: Firebase authentication wrapper
 - **geminiService.js**: Google Gemini AI for meal photo analysis and nutrition estimation
@@ -646,10 +646,11 @@ Nutrio uses an intelligent AI-powered meal generation system that creates person
 - Browser notifications for reminders
 
 ### Code Statistics
-- **Total Lines of Code**: ~15,800 lines
+- **Total Lines of Code**: ~17,200 lines
 - **Components**: 14 pages, 30+ reusable components
-- **Services**: 11 API/business logic services
-- **Zero Technical Debt**: No console statements, unused code, or TODOs in production paths
+- **Services**: 15 API/business logic services
+- **Zero Lint Errors**: Clean code with no ESLint errors or warnings
+- **Zero Technical Debt**: No unused code or TODOs in production paths
 
 ### Required Setup
 To use Nutrio, you **must** configure:

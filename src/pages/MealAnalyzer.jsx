@@ -30,6 +30,11 @@ import { logFoodItem } from '../services/foodLogService';
 import onlineFoodResearchService from '../services/onlineFoodResearchService';
 import scanFeedbackService from '../services/scanFeedbackService';
 
+// Helper function to generate unique scan IDs
+const generateScanId = () => {
+  return `scan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
 const MealAnalyzer = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -166,7 +171,7 @@ const MealAnalyzer = () => {
     setAnalysisStage('ai');
 
     // Generate scan ID
-    const scanId = `scan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const scanId = generateScanId();
     setCurrentScanId(scanId);
 
     // Increment scan count for meal scans (not barcode)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   History as HistoryIcon,
@@ -40,11 +40,7 @@ const History = () => {
   const [editMealType, setEditMealType] = useState('lunch');
 
   // Fetch meal history data from Firestore
-  useEffect(() => {
-    fetchMealHistory();
-  }, [dateRange]);
-
-  const fetchMealHistory = async () => {
+  const fetchMealHistory = useCallback(async () => {
     const user = auth.currentUser;
     if (!user) {
       toast.error('Please log in to view your history');
@@ -75,7 +71,11 @@ const History = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dateRange]);
+
+  useEffect(() => {
+    fetchMealHistory();
+  }, [fetchMealHistory]);
 
   // Group entries by date
   const groupEntriesByDate = (entries) => {

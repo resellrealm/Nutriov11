@@ -12,7 +12,7 @@ class OnlineFoodResearchService {
    */
   async researchFood(aiResult) {
     try {
-      const { name, nutrition, confidence, ingredients } = aiResult;
+      const { name, ingredients } = aiResult;
 
       // Try multiple research strategies
       const researchResults = await Promise.allSettled([
