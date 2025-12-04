@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { db, isFirebaseFullyInitialized } from '../config/firebase';
 import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
+import { logError } from '../utils/errorLogger';
 
 // Initialize Gemini AI
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -185,7 +186,7 @@ Return ONLY valid JSON (no markdown, no extra text) in this EXACT format:
 
     return meal;
   } catch (error) {
-    console.error('Error generating meal:', error);
+    logError('aiMealGenerationService.generateAIMeal', error);
     throw error;
   }
 };
@@ -221,7 +222,7 @@ export const generateWeeklyMeals = async (goal, dietaryType, onProgress = null) 
 
     return meals;
   } catch (error) {
-    console.error(`Error generating weekly meals for ${goal}_${dietaryType}:`, error);
+    logError('aiMealGenerationService.generateWeeklyMeals', error, { goal, dietaryType });
     throw error;
   }
 };
@@ -260,7 +261,7 @@ export const generateCategoryMeals = async (goal, dietaryType, onProgress = null
 
     return meals;
   } catch (error) {
-    console.error(`Error generating meals for ${goal}_${dietaryType}:`, error);
+    logError('aiMealGenerationService.generateAllMealsForCategory', error, { goal, dietaryType });
     throw error;
   }
 };
@@ -288,7 +289,7 @@ export const saveMealsToFirestore = async (weekNumber, categoryId, meals) => {
     console.log(`✅ Saved ${categoryId} to Firestore`);
     return true;
   } catch (error) {
-    console.error(`Error saving ${categoryId} to Firestore:`, error);
+    logError('aiMealGenerationService.saveMealsToFirestore', error, { categoryId });
     throw error;
   }
 };
@@ -313,7 +314,7 @@ export const fetchMealsFromFirestore = async (weekNumber, categoryId) => {
 
     return null;
   } catch (error) {
-    console.error(`Error fetching ${categoryId} from Firestore:`, error);
+    logError('aiMealGenerationService.fetchMealsFromFirestore', error, { categoryId });
     return null;
   }
 };
@@ -364,6 +365,7 @@ export const generateAllCategoryMeals = async (onProgress = null) => {
       console.log(`✅ Completed ${categoryId} (${completedCategories}/${totalCategories})`);
 
     } catch (error) {
+      logError('aiMealGenerationService.generateAllCategoryMeals', error, { categoryId });
       console.error(`❌ Failed to generate ${categoryId}:`, error);
       results.failed.push({ categoryId, error: error.message });
     }

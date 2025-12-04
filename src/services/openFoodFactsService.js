@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
   handleApiError
 } from '../utils/errorCodes';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Open Food Facts API Service
@@ -52,7 +53,7 @@ export const getProductByBarcode = async (barcode) => {
       }
     };
   } catch (error) {
-    console.error('Error fetching product from Open Food Facts:', error);
+    logError('openFoodFactsService.getProductByBarcode', error, { barcode });
     return handleApiError(error);
   }
 };
