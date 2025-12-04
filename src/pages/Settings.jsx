@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,7 +38,7 @@ const Settings = () => {
   });
 
   // User Profile
-  const [userProfile, setUserProfile] = useState(null);
+  const [_userProfile, setUserProfile] = useState(null);
 
   // Modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -64,7 +64,7 @@ const Settings = () => {
             }
           }
         }
-      } catch (error) {
+      } catch {
         toast.error('Failed to load settings');
       } finally {
         setLoading(false);
@@ -109,7 +109,7 @@ const Settings = () => {
       } else {
         toast.error('Failed to save settings');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to save settings');
     } finally {
       setSaving(false);

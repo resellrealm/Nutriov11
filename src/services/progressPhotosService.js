@@ -21,6 +21,7 @@ import {
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Progress Photos Service

@@ -6,6 +6,76 @@ import {
   LOADING_COMPLETION_DELAY
 } from '../config/constants';
 
+// Steam particle component
+const SteamParticle = ({ delay, x }) => (
+  <motion.div
+    className="absolute bottom-0 w-4 h-4 bg-white/40 rounded-full blur-sm"
+    initial={{ y: 0, x, opacity: 0, scale: 0.5 }}
+    animate={{
+      y: -60,
+      opacity: [0, 0.6, 0],
+      scale: [0.5, 1.2, 0.8],
+    }}
+    transition={{
+      duration: 2,
+      repeat: Infinity,
+      delay,
+      ease: 'easeOut',
+    }}
+  />
+);
+
+// Toast component
+const Toast = ({ controls, className, initialX = 0, progress, isPopping }) => (
+  <motion.div
+    animate={controls}
+    className={`absolute z-10 ${className}`}
+    initial={{ y: 0, x: initialX }}
+  >
+    <motion.div
+      className="relative"
+      animate={{
+        y: progress >= 70 && !isPopping ? [-2, -4, -2] : 0,
+      }}
+      transition={{
+        duration: 0.5,
+        repeat: progress >= 70 && !isPopping ? Infinity : 0,
+      }}
+    >
+      {/* Toast slice */}
+      <div className="w-24 h-32 bg-gradient-to-b from-amber-200 via-amber-300 to-amber-400 rounded-lg shadow-xl relative overflow-hidden border-2 border-amber-500">
+        {/* Toast texture */}
+        <div className="absolute inset-2 bg-amber-100/40 rounded-md" />
+
+        {/* Brown spots - appear gradually */}
+        <motion.div
+          className="absolute top-4 left-4 w-2 h-2 bg-amber-800 rounded-full"
+          animate={{ opacity: Math.min(progress / 100, 0.7) }}
+        />
+        <motion.div
+          className="absolute top-8 right-6 w-3 h-3 bg-amber-900 rounded-full"
+          animate={{ opacity: Math.min(progress / 100, 0.6) }}
+        />
+        <motion.div
+          className="absolute bottom-8 left-6 w-2 h-2 bg-amber-800 rounded-full"
+          animate={{ opacity: Math.min(progress / 100, 0.7) }}
+        />
+        <motion.div
+          className="absolute top-12 left-8 w-2 h-2 bg-amber-900 rounded-full"
+          animate={{ opacity: Math.min(progress / 100, 0.5) }}
+        />
+        <motion.div
+          className="absolute bottom-4 right-4 w-2 h-2 bg-amber-800 rounded-full"
+          animate={{ opacity: Math.min(progress / 100, 0.6) }}
+        />
+
+        {/* Shine effect on toast */}
+        <div className="absolute top-2 left-2 w-8 h-12 bg-white/30 rounded-full blur-sm" />
+      </div>
+    </motion.div>
+  </motion.div>
+);
+
 const LoadingScreen = ({ onLoadingComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isPopping, setIsPopping] = useState(false);
@@ -294,76 +364,6 @@ const LoadingScreen = ({ onLoadingComplete }) => {
     };
   }, [onLoadingComplete, isPopping, showSteam, toast1Controls, toast2Controls, toasterControls, plateControls, screenToastControls]);
 
-  // Steam particle component
-  const SteamParticle = ({ delay, x }) => (
-    <motion.div
-      className="absolute bottom-0 w-4 h-4 bg-white/40 rounded-full blur-sm"
-      initial={{ y: 0, x, opacity: 0, scale: 0.5 }}
-      animate={{
-        y: -60,
-        opacity: [0, 0.6, 0],
-        scale: [0.5, 1.2, 0.8],
-      }}
-      transition={{
-        duration: 2,
-        repeat: Infinity,
-        delay,
-        ease: 'easeOut',
-      }}
-    />
-  );
-
-  // Toast component
-  const Toast = ({ controls, className, initialX = 0 }) => (
-    <motion.div
-      animate={controls}
-      className={`absolute z-10 ${className}`}
-      initial={{ y: 0, x: initialX }}
-    >
-      <motion.div
-        className="relative"
-        animate={{
-          y: progress >= 70 && !isPopping ? [-2, -4, -2] : 0,
-        }}
-        transition={{
-          duration: 0.5,
-          repeat: progress >= 70 && !isPopping ? Infinity : 0,
-        }}
-      >
-        {/* Toast slice */}
-        <div className="w-24 h-32 bg-gradient-to-b from-amber-200 via-amber-300 to-amber-400 rounded-lg shadow-xl relative overflow-hidden border-2 border-amber-500">
-          {/* Toast texture */}
-          <div className="absolute inset-2 bg-amber-100/40 rounded-md" />
-
-          {/* Brown spots - appear gradually */}
-          <motion.div
-            className="absolute top-4 left-4 w-2 h-2 bg-amber-800 rounded-full"
-            animate={{ opacity: Math.min(progress / 100, 0.7) }}
-          />
-          <motion.div
-            className="absolute top-8 right-6 w-3 h-3 bg-amber-900 rounded-full"
-            animate={{ opacity: Math.min(progress / 100, 0.6) }}
-          />
-          <motion.div
-            className="absolute bottom-8 left-6 w-2 h-2 bg-amber-800 rounded-full"
-            animate={{ opacity: Math.min(progress / 100, 0.7) }}
-          />
-          <motion.div
-            className="absolute top-12 left-8 w-2 h-2 bg-amber-900 rounded-full"
-            animate={{ opacity: Math.min(progress / 100, 0.5) }}
-          />
-          <motion.div
-            className="absolute bottom-4 right-4 w-2 h-2 bg-amber-800 rounded-full"
-            animate={{ opacity: Math.min(progress / 100, 0.6) }}
-          />
-
-          {/* Shine effect on toast */}
-          <div className="absolute top-2 left-2 w-8 h-12 bg-white/30 rounded-full blur-sm" />
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-primary via-accent to-primary animate-gradient-xy overflow-hidden">
       {/* Plate */}
@@ -502,8 +502,8 @@ const LoadingScreen = ({ onLoadingComplete }) => {
             </div>
 
             {/* Two Toast slices */}
-            <Toast controls={toast1Controls} className="top-8 left-[20%]" initialX={-15} />
-            <Toast controls={toast2Controls} className="top-8 left-[20%]" initialX={15} />
+            <Toast controls={toast1Controls} className="top-8 left-[20%]" initialX={-15} progress={progress} isPopping={isPopping} />
+            <Toast controls={toast2Controls} className="top-8 left-[20%]" initialX={15} progress={progress} isPopping={isPopping} />
           </motion.div>
         </div>
 

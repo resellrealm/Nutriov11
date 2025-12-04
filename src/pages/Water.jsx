@@ -23,12 +23,12 @@ const Water = () => {
   const [updating, setUpdating] = useState(false);
 
   // Today's data
-  const [todayDate, setTodayDate] = useState(new Date().toISOString().split('T')[0]);
+  const [todayDate] = useState(new Date().toISOString().split('T')[0]);
   const [todayGlasses, setTodayGlasses] = useState(0);
-  const [dailyGoal, setDailyGoal] = useState(8); // Default 8 glasses
+  const [dailyGoal] = useState(8); // Default 8 glasses
 
   // Weekly data
-  const [weeklySummary, setWeeklySummary] = useState(null);
+  const [_weeklySummary, setWeeklySummary] = useState(null);
   const [weeklyChartData, setWeeklyChartData] = useState([]);
 
   // Stats
@@ -110,7 +110,7 @@ const Water = () => {
       } else {
         toast.error('Failed to log water');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to log water');
     } finally {
       setUpdating(false);
@@ -130,7 +130,7 @@ const Water = () => {
       } else {
         toast.error('Failed to remove water');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove water');
     } finally {
       setUpdating(false);

@@ -8,8 +8,7 @@ import {
   query,
   where,
   orderBy,
-  serverTimestamp,
-  updateDoc
+  serverTimestamp
 } from 'firebase/firestore';
 import {
   ERROR_CODES,

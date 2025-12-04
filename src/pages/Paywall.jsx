@@ -16,7 +16,7 @@ const Paywall = () => {
   const dispatch = useDispatch();
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminCode, setAdminCode] = useState('');
-  const [selectedPlan, setSelectedPlan] = useState('yearly');
+  const [_selectedPlan, setSelectedPlan] = useState('yearly');
 
   const ADMIN_ACCESS_CODE = 'R9X2LQ7B1V8T3YP';
 

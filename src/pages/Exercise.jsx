@@ -125,7 +125,7 @@ const Exercise = () => {
       } else {
         toast.error('Failed to log exercise');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to log exercise');
     } finally {
       setSaving(false);
@@ -145,7 +145,7 @@ const Exercise = () => {
       } else {
         toast.error('Failed to delete exercise');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete exercise');
     }
   };

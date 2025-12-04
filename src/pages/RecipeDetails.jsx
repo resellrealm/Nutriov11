@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Clock, Users, ChefHat, Flame, Apple, Heart,
@@ -13,7 +12,6 @@ import { getRecipeById } from '../services/recipeService';
 const RecipeDetails = () => {
   const { recipeId } = useParams();
   const navigate = useNavigate();
-  const userId = useSelector(state => state.auth.user?.id);
 
   const [loading, setLoading] = useState(true);
   const [recipe, setRecipe] = useState(null);
@@ -37,7 +35,7 @@ const RecipeDetails = () => {
         } else {
           setError('Recipe not found');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load recipe');
       } finally {
         setLoading(false);

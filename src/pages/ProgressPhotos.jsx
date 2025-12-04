@@ -127,7 +127,7 @@ const ProgressPhotos = () => {
       } else {
         toast.error(result.error || 'Failed to upload photo');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to upload photo');
     } finally {
       setUploading(false);
@@ -149,7 +149,7 @@ const ProgressPhotos = () => {
       } else {
         toast.error('Failed to delete photo');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete photo');
     }
   };
