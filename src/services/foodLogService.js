@@ -1,4 +1,4 @@
-import { db, isFirebaseFullyInitialized } from '../config/firebase';
+import { db } from '../config/firebase';
 import {
   collection,
   doc,
@@ -17,15 +17,7 @@ import {
   createErrorResponse
 } from '../utils/errorCodes';
 import { logError } from '../utils/errorLogger';
-
-// Helper to check if Firestore is available
-const checkFirestoreConfig = () => {
-  if (!isFirebaseFullyInitialized || !db) {
-    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
-      'Database is not configured. Please check your Firebase setup.');
-  }
-  return null;
-};
+import { checkFirestoreConfig } from '../utils/firebaseHelpers';
 
 /**
  * Food Log Service

@@ -1,6 +1,21 @@
 /**
  * ModelsLab AI Service
  * Integration with ModelsLab APIs for image analysis and generation
+ *
+ * NOTE: This service is currently NOT in use.
+ * It's kept for potential future integration if additional AI image features are needed.
+ * The app currently uses Google Gemini AI for image analysis (see geminiService.js).
+ *
+ * To use this service:
+ * 1. Add VITE_MODELSLAB_API_KEY to your .env file
+ * 2. Import and call the desired functions from components
+ *
+ * Available functions:
+ * - analyzeFoodImage() - Detect food items in images
+ * - generateRecipeImage() - Generate AI images for recipes
+ * - removeBackground() - Remove background from food images
+ * - upscaleImage() - Enhance image quality
+ * - batchGenerateRecipeImages() - Generate multiple recipe images
  */
 
 import { logError } from '../utils/errorLogger';

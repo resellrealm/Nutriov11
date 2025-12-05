@@ -1,4 +1,4 @@
-import { db, isFirebaseFullyInitialized } from '../config/firebase';
+import { db } from '../config/firebase';
 import {
   collection,
   doc,
@@ -17,20 +17,12 @@ import {
   createErrorResponse
 } from '../utils/errorCodes';
 import { logError } from '../utils/errorLogger';
+import { checkFirestoreConfig } from '../utils/firebaseHelpers';
 
 /**
  * Exercise Tracking Service
  * Handles logging and tracking exercise activities
  */
-
-// Helper to check if Firestore is available
-const checkFirestoreConfig = () => {
-  if (!isFirebaseFullyInitialized || !db) {
-    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
-      'Database is not configured. Please check your Firebase setup.');
-  }
-  return null;
-};
 
 // Exercise types with MET values (Metabolic Equivalent of Task)
 // MET value x weight in kg x duration in hours = calories burned

@@ -1,4 +1,4 @@
-import { db, storage, isFirebaseFullyInitialized } from '../config/firebase';
+import { db, storage } from '../config/firebase';
 import {
   doc,
   getDoc,
@@ -17,15 +17,7 @@ import {
   mapFirestoreErrorCode,
   createErrorResponse
 } from '../utils/errorCodes';
-
-// Helper to check if Firestore is available
-const checkFirestoreConfig = () => {
-  if (!isFirebaseFullyInitialized || !db) {
-    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
-      'Database is not configured. Please check your Firebase setup.');
-  }
-  return null;
-};
+import { checkFirestoreConfig } from '../utils/firebaseHelpers';
 
 /**
  * User Service

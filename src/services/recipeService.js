@@ -1,4 +1,4 @@
-import { db, isFirebaseFullyInitialized } from '../config/firebase';
+import { db } from '../config/firebase';
 import {
   collection,
   doc,
@@ -11,24 +11,13 @@ import {
   orderBy,
   serverTimestamp
 } from 'firebase/firestore';
-import {
-  ERROR_CODES,
-  createErrorResponse
-} from '../utils/errorCodes';
+import { ERROR_CODES } from '../utils/errorCodes';
 import { logError, logWarning } from '../utils/errorLogger';
+import { checkFirestoreConfig } from '../utils/firebaseHelpers';
 import {
   getMealsForUser,
   getMealOfTheDay as getAIMealOfTheDay
 } from './aiMealGenerationService';
-
-// Helper to check if Firestore is available
-const checkFirestoreConfig = () => {
-  if (!isFirebaseFullyInitialized || !db) {
-    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
-      'Database is not configured. Please check your Firebase setup.');
-  }
-  return null;
-};
 
 // ==================== BACKUP RECIPES (28 total: 7 per meal type) ====================
 // These serve as fallback when AI-generated meals are unavailable

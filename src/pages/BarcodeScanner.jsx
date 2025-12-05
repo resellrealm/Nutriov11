@@ -17,7 +17,6 @@ import {
 import toast from 'react-hot-toast';
 import { getProductByBarcode, isValidBarcode } from '../services/openFoodFactsService';
 import { logFoodItem } from '../services/foodLogService';
-import { logError } from '../utils/errorLogger';
 
 /**
  * Barcode Scanner Component

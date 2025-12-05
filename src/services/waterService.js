@@ -1,4 +1,4 @@
-import { db, isFirebaseFullyInitialized } from '../config/firebase';
+import { db } from '../config/firebase';
 import {
   collection,
   doc,
@@ -16,20 +16,12 @@ import {
   createErrorResponse
 } from '../utils/errorCodes';
 import { logError } from '../utils/errorLogger';
+import { checkFirestoreConfig } from '../utils/firebaseHelpers';
 
 /**
  * Water Tracking Service
  * Handles water intake logging and tracking
  */
-
-// Helper to check if Firestore is available
-const checkFirestoreConfig = () => {
-  if (!isFirebaseFullyInitialized || !db) {
-    return createErrorResponse(ERROR_CODES.DB_UNAVAILABLE,
-      'Database is not configured. Please check your Firebase setup.');
-  }
-  return null;
-};
 
 /**
  * Log water intake for a specific date

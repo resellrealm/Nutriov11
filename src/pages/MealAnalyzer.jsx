@@ -18,7 +18,9 @@ import {
   ThumbsDown,
   Search,
   RotateCcw,
-  Zap
+  Zap,
+  Crown,
+  Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { MAX_FILE_SIZE, ERROR_MESSAGES, MAX_DAILY_SCANS } from '../config/constants';
@@ -291,7 +293,11 @@ const MealAnalyzer = () => {
 
   const handleManualSearch = () => {
     toast('Manual search feature coming soon!', { icon: '🔍' });
-    // TODO: Navigate to manual food search
+    // TODO: Implement manual food search feature
+    // 1. Create a new FoodSearch page/component with searchable food database
+    // 2. Add route in App.jsx (e.g., /food-search)
+    // 3. Navigate to the new page: navigate('/food-search')
+    // 4. Allow users to search and manually log food items when AI analysis fails
   };
 
   const handleTryAgain = () => {
