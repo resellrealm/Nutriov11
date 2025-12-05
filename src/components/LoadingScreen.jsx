@@ -93,10 +93,25 @@ const LoadingScreen = ({ onLoadingComplete }) => {
 
   // Initialize Web Audio Context for sound effects
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+      // Check if AudioContext is available
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      }
+    } catch (error) {
+      // Audio context initialization failed - continue without sound
+      console.warn('AudioContext initialization failed:', error);
+      audioContextRef.current = null;
+    }
+
     return () => {
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        try {
+          audioContextRef.current.close();
+        } catch (error) {
+          console.warn('AudioContext close failed:', error);
+        }
       }
     };
   }, []);
@@ -114,7 +129,7 @@ const LoadingScreen = ({ onLoadingComplete }) => {
     filter.connect(gainNode);
     gainNode.connect(ctx.destination);
 
-    oscillator.type = 'pink';
+    oscillator.type = 'sawtooth'; // Using sawtooth for noise-like sizzle effect
     oscillator.frequency.setValueAtTime(80, ctx.currentTime);
 
     filter.type = 'lowpass';
