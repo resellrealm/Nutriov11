@@ -18,7 +18,7 @@ const Paywall = () => {
   const [adminCode, setAdminCode] = useState('');
   const [_selectedPlan, setSelectedPlan] = useState('yearly');
 
-  const ADMIN_ACCESS_CODE = 'R9X2LQ7B1V8T3YP';
+  const ADMIN_ACCESS_CODE = import.meta.env.VITE_ADMIN_ACCESS_CODE || '';
 
   // Pricing plans with proper calculations
   const pricingPlans = [
