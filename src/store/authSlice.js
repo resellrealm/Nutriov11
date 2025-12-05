@@ -39,28 +39,17 @@ const authSlice = createSlice({
       state.isPremium = false;
       state.dailyScansUsed = 0;
       state.lastScanDate = null;
-      // Only remove auth-related keys, preserve user preferences
-      const authKeys = [
-        'token', 'user', 'onboardingComplete', 'isPremium',
-        'dailyScansUsed', 'lastScanDate', 'planTier', 'onboarding_progress'
-      ];
-      authKeys.forEach(key => localStorage.removeItem(key));
-      sessionStorage.clear();
+      state.scanCooldownUntil = null;
+      state.lastScanTimestamp = null;
     },
     setOnboardingComplete: (state, action) => {
       state.hasCompletedOnboarding = action.payload;
-      if (action.payload) {
-        localStorage.setItem('onboardingComplete', 'true');
-      }
     },
     updateUser: (state, action) => {
       state.user = { ...state.user, ...action.payload };
     },
     setPremiumStatus: (state, action) => {
       state.isPremium = action.payload;
-      localStorage.setItem('isPremium', action.payload.toString());
-      // Sync with planTier for consistency across components
-      localStorage.setItem('planTier', action.payload ? 'premium' : 'free');
     },
     incrementDailyScans: (state) => {
       const today = new Date().toDateString();
@@ -91,18 +80,12 @@ const authSlice = createSlice({
 
         if (cooldownSeconds > 0) {
           state.scanCooldownUntil = now + (cooldownSeconds * 1000);
-          localStorage.setItem('scanCooldownUntil', state.scanCooldownUntil.toString());
         } else {
           state.scanCooldownUntil = null;
-          localStorage.removeItem('scanCooldownUntil');
         }
       }
 
       state.lastScanTimestamp = now;
-
-      localStorage.setItem('dailyScansUsed', state.dailyScansUsed.toString());
-      localStorage.setItem('lastScanDate', state.lastScanDate);
-      localStorage.setItem('lastScanTimestamp', now.toString());
     },
     resetDailyScans: (state) => {
       const today = new Date().toDateString();
@@ -110,14 +93,10 @@ const authSlice = createSlice({
         state.dailyScansUsed = 0;
         state.lastScanDate = today;
         state.scanCooldownUntil = null;
-        localStorage.setItem('dailyScansUsed', '0');
-        localStorage.setItem('lastScanDate', today);
-        localStorage.removeItem('scanCooldownUntil');
       }
     },
     clearCooldown: (state) => {
       state.scanCooldownUntil = null;
-      localStorage.removeItem('scanCooldownUntil');
     },
   },
 });

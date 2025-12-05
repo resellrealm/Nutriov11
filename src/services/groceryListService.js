@@ -282,7 +282,7 @@ export const applyBudgetConstraints = (items, budget, budgetPriority) => {
  * Generate grocery list from meal plan
  * This is the main algorithm
  */
-export const generateGroceryList = async (userId, userProfile, _mealPlan = []) => {
+export const generateGroceryList = async (userId, userProfile) => {
   const configError = checkFirestoreConfig();
   if (configError) return configError;
 
@@ -292,8 +292,7 @@ export const generateGroceryList = async (userId, userProfile, _mealPlan = []) =
       household,
       budget,
       dietary,
-      shoppingPreferences,
-      cookingHabits: _cookingHabits
+      shoppingPreferences
     } = userProfile;
 
     // Step 1: Calculate household scaling factor

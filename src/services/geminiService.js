@@ -28,6 +28,21 @@ const getGeminiClient = () => {
 };
 
 /**
+ * Wrap a promise with a timeout
+ * @param {Promise} promise - Promise to wrap
+ * @param {number} ms - Timeout in milliseconds
+ * @returns {Promise} Promise that rejects if timeout is reached
+ */
+const withTimeout = (promise, ms = 30000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), ms)
+    )
+  ]);
+};
+
+/**
  * Analyze meal photo and extract nutrition information
  *
  * @param {string} imageBase64 - Base64 encoded image data
@@ -92,16 +107,19 @@ Rules:
     // Remove data URL prefix if present
     const imageData = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
-    // Generate content with image and prompt
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          mimeType: 'image/jpeg',
-          data: imageData
+    // Generate content with image and prompt (with 30s timeout)
+    const result = await withTimeout(
+      model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: imageData
+          }
         }
-      }
-    ]);
+      ]),
+      30000
+    );
 
     const response = await result.response;
     const text = response.text();
@@ -213,7 +231,7 @@ Respond ONLY with valid JSON (no markdown):
   ]
 }`;
 
-    const result = await model.generateContent(prompt);
+    const result = await withTimeout(model.generateContent(prompt), 30000);
     const response = await result.response;
     const text = response.text();
 
@@ -270,15 +288,18 @@ Freshness: fresh, moderate, questionable`;
 
     const imageData = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          mimeType: 'image/jpeg',
-          data: imageData
+    const result = await withTimeout(
+      model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: imageData
+          }
         }
-      }
-    ]);
+      ]),
+      30000
+    );
 
     const response = await result.response;
     const text = response.text();
@@ -371,7 +392,7 @@ Rules:
 - Include clear instructions (array of steps)
 - Explain why this meal is good for the user`;
 
-    const result = await model.generateContent(prompt);
+    const result = await withTimeout(model.generateContent(prompt), 30000);
     const response = await result.response;
     const text = response.text();
 

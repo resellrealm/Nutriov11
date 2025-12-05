@@ -202,9 +202,19 @@ const Dashboard = () => {
   }, [userId]);
 
   useEffect(() => {
-    if (userId) {
-      fetchDashboardData();
-    }
+    let isMounted = true;
+
+    const loadData = async () => {
+      if (userId && isMounted) {
+        await fetchDashboardData();
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [userId, fetchDashboardData]);
 
   useEffect(() => {

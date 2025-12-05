@@ -462,7 +462,7 @@ const filterMealsArrayByAllergies = (meals, allergies) => {
  * NEW: Returns meal for current day of week (Monday = day 1, etc.)
  * Falls back to random meal if day metadata not available
  */
-export const getMealOfTheDay = async (userProfile, _mealType = null) => {
+export const getMealOfTheDay = async (userProfile) => {
   const meals = await getMealsForUser(userProfile);
 
   if (!meals || meals.length === 0) {

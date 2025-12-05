@@ -86,7 +86,8 @@ const Register = () => {
         // If admin access, grant premium status
         if (hasAdminAccess) {
           // Update premium status in Firestore
-          const premiumResult = await updatePremiumStatus(result.user.id, true, 'R9X2LQ7B1V8T3YP');
+          const adminCode = import.meta.env.VITE_ADMIN_ACCESS_CODE || '';
+          const premiumResult = await updatePremiumStatus(result.user.id, true, adminCode);
 
           if (premiumResult.success) {
             // Update Redux and localStorage

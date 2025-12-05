@@ -3,6 +3,7 @@ import authReducer from './authSlice';
 import onboardingReducer from './onboardingSlice';
 import nutritionReducer from './nutritionSlice';
 import achievementsReducer from './achievementsSlice';
+import localStorageMiddleware from './localStorageMiddleware';
 
 // Load persisted onboarding state from localStorage
 const loadOnboardingState = () => {
@@ -30,7 +31,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(localStorageMiddleware),
 });
 
 // Debounced localStorage save to avoid excessive writes
