@@ -93,6 +93,38 @@ const Account = () => {
 
   // Load user profile from Firestore
   useEffect(() => {
+    // Load user stats from various services
+    const loadUserStats = async () => {
+      try {
+        // Get weekly summary for meal count and streak
+        const weeklyResult = await getWeeklySummary(userId, new Date().toISOString().split('T')[0]);
+
+        // Get achievements count
+        const achievementsResult = await getUserAchievements(userId);
+
+        if (weeklyResult.success) {
+          setUserStats(prev => ({
+            ...prev,
+            totalMealsLogged: weeklyResult.data?.totalMeals || 0,
+            streak: weeklyResult.data?.streak || 0,
+            // Simple level calculation: level = totalMeals / 10
+            level: Math.floor((weeklyResult.data?.totalMeals || 0) / 10) + 1,
+            points: (weeklyResult.data?.totalMeals || 0) * 10
+          }));
+        }
+
+        if (achievementsResult.success) {
+          const unlockedCount = achievementsResult.data?.filter(a => a.unlocked).length || 0;
+          setUserStats(prev => ({
+            ...prev,
+            achievementsUnlocked: unlockedCount
+          }));
+        }
+      } catch (error) {
+        logError('Account.loadStats', error);
+      }
+    };
+
     const loadUserProfile = async () => {
       if (!userId) {
         setIsLoading(false);
@@ -137,40 +169,7 @@ const Account = () => {
     };
 
     loadUserProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
-
-  // Load user stats from various services
-  const loadUserStats = async () => {
-    try {
-      // Get weekly summary for meal count and streak
-      const weeklyResult = await getWeeklySummary(userId, new Date().toISOString().split('T')[0]);
-
-      // Get achievements count
-      const achievementsResult = await getUserAchievements(userId);
-
-      if (weeklyResult.success) {
-        setUserStats(prev => ({
-          ...prev,
-          totalMealsLogged: weeklyResult.data?.totalMeals || 0,
-          streak: weeklyResult.data?.streak || 0,
-          // Simple level calculation: level = totalMeals / 10
-          level: Math.floor((weeklyResult.data?.totalMeals || 0) / 10) + 1,
-          points: (weeklyResult.data?.totalMeals || 0) * 10
-        }));
-      }
-
-      if (achievementsResult.success) {
-        const unlockedCount = achievementsResult.data?.filter(a => a.unlocked).length || 0;
-        setUserStats(prev => ({
-          ...prev,
-          achievementsUnlocked: unlockedCount
-        }));
-      }
-    } catch (error) {
-      logError('Account.loadStats', error);
-    }
-  };
 
   // Toggle dark mode (keep in localStorage as it's a UI preference)
   const toggleDarkMode = () => {

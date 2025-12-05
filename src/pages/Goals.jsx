@@ -152,17 +152,17 @@ const Goals = () => {
         // Calculate success rates
         const weeklySuccess = adherence?.adherence?.allMacros?.percentage || 0;
 
-        setStats({
+        setStats(prevStats => ({
           currentStreak: streak,
           longestStreak: streak, // This would need historical data
           totalDaysTracked: daysTracked,
-          goalsMetToday: stats.goalsMetToday,
+          goalsMetToday: prevStats.goalsMetToday,
           totalGoals: 4,
           weeklySuccessRate: weeklySuccess,
           monthlySuccessRate: weeklySuccess, // Would need monthly data
           avgCaloriesPerDay: avgCalories,
           avgProteinPerDay: avgProtein
-        });
+        }));
       }
     } catch (error) {
       logError('Goals.fetchData', error);
@@ -170,7 +170,6 @@ const Goals = () => {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   useEffect(() => {
@@ -335,11 +334,8 @@ const Goals = () => {
     const [tempGoals, setTempGoals] = useState(goals);
 
     useEffect(() => {
-      if (goals) {
-        setTempGoals({ ...goals });
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [goals]);
+      setTempGoals(goals ? { ...goals } : null);
+    }, []);
 
     if (!tempGoals) return null;
 

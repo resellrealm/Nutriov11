@@ -293,11 +293,6 @@ const MealAnalyzer = () => {
 
   const handleManualSearch = () => {
     toast('Manual search feature coming soon!', { icon: '🔍' });
-    // TODO: Implement manual food search feature
-    // 1. Create a new FoodSearch page/component with searchable food database
-    // 2. Add route in App.jsx (e.g., /food-search)
-    // 3. Navigate to the new page: navigate('/food-search')
-    // 4. Allow users to search and manually log food items when AI analysis fails
   };
 
   const handleTryAgain = () => {

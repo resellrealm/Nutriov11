@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,14 +50,9 @@ const Favourites = () => {
   const [userRecipes, setUserRecipes] = useState([]);
   const [favourites, setFavourites] = useState([]);
 
-  useEffect(() => {
-    if (user?.uid) {
-      loadRecipes();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  const loadRecipes = useCallback(async () => {
+    if (!user?.uid) return;
 
-  const loadRecipes = async () => {
     setLoading(true);
     try {
       const result = await getAllUserAndBuiltInRecipes(user.uid);
@@ -73,7 +68,11 @@ const Favourites = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    loadRecipes();
+  }, [loadRecipes]);
 
   const tabs = [
     { id: 'favourites', name: 'All Recipes', icon: Heart, count: favourites.length },

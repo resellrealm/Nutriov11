@@ -17,6 +17,7 @@ import {
 import toast from 'react-hot-toast';
 import { getProductByBarcode, isValidBarcode } from '../services/openFoodFactsService';
 import { logFoodItem } from '../services/foodLogService';
+import { logError } from '../utils/errorLogger';
 
 /**
  * Barcode Scanner Component
@@ -119,7 +120,8 @@ const BarcodeScanner = () => {
         setManualEntry(true);
         setManualBarcode(barcode);
       }
-    } catch {
+    } catch (error) {
+      logError('BarcodeScanner.handleBarcodeScanned', error);
       toast.error('Failed to fetch product information');
     } finally {
       setIsLoading(false);
@@ -178,7 +180,8 @@ const BarcodeScanner = () => {
       } else {
         toast.error(result.error || 'Failed to log food');
       }
-    } catch {
+    } catch (error) {
+      logError('BarcodeScanner.handleLogFood', error);
       toast.error('An error occurred while logging food');
     } finally {
       setIsLoading(false);

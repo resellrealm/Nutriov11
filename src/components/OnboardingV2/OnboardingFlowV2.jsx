@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -81,15 +81,7 @@ const OnboardingFlowV2 = () => {
 
   const CurrentStepComponent = stepComponents[currentStep];
 
-  // Auto-save progress to Firebase after each step
-  useEffect(() => {
-    if (userId && currentStep > 1) {
-      saveProgressToFirebase();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep, userId]);
-
-  const saveProgressToFirebase = async () => {
+  const saveProgressToFirebase = useCallback(async () => {
     if (!userId) return;
 
     setIsSaving(true);
@@ -130,7 +122,14 @@ const OnboardingFlowV2 = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [userId, currentStep, onboardingData, dispatch]);
+
+  // Auto-save progress to Firebase after each step
+  useEffect(() => {
+    if (userId && currentStep > 1) {
+      saveProgressToFirebase();
+    }
+  }, [userId, currentStep, saveProgressToFirebase]);
 
   const handleNext = async () => {
     if (!stepValidation[currentStep]) {

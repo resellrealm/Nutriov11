@@ -30,13 +30,105 @@ const Analytics = () => {
   ];
 
   useEffect(() => {
-    if (user?.uid) {
-      loadAnalytics();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, selectedPeriod]);
+    const calculatePercentChange = (oldVal, newVal) => {
+      if (oldVal === 0) return newVal > 0 ? 100 : 0;
+      return Math.round(((newVal - oldVal) / oldVal) * 100);
+    };
 
-  const loadAnalytics = async () => {
+    const calculateComparison = (currentAnalytics, previousDailyData) => {
+      if (previousDailyData.length === 0) {
+        return { calories: 0, protein: 0, carbs: 0, fats: 0 };
+      }
+
+      const prevTotals = previousDailyData.reduce((acc, day) => ({
+        calories: acc.calories + day.calories,
+        protein: acc.protein + day.protein,
+        carbs: acc.carbs + day.carbs,
+        fats: acc.fats + day.fats
+      }), { calories: 0, protein: 0, carbs: 0, fats: 0 });
+
+      const prevAverages = {
+        calories: Math.round(prevTotals.calories / previousDailyData.length),
+        protein: Math.round(prevTotals.protein / previousDailyData.length),
+        carbs: Math.round(prevTotals.carbs / previousDailyData.length),
+        fats: Math.round(prevTotals.fats / previousDailyData.length)
+      };
+
+      return {
+        calories: calculatePercentChange(prevAverages.calories, currentAnalytics.averages.calories),
+        protein: calculatePercentChange(prevAverages.protein, currentAnalytics.averages.protein),
+        carbs: calculatePercentChange(prevAverages.carbs, currentAnalytics.averages.carbs),
+        fats: calculatePercentChange(prevAverages.fats, currentAnalytics.averages.fats)
+      };
+    };
+
+    const calculateAnalytics = (dailyData, userGoals) => {
+      const daysWithData = dailyData.filter(d => d.mealsLogged > 0);
+      const totalDays = dailyData.length;
+      const activeDays = daysWithData.length;
+
+      if (activeDays === 0) {
+        return {
+          averages: { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0 },
+          totals: { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: 0 },
+          trends: dailyData,
+          macroDistribution: [],
+          goalAdherence: { calories: 0, protein: 0, carbs: 0, fats: 0 },
+          loggingRate: 0
+        };
+      }
+
+      // Calculate averages (only from days with data)
+      const totals = daysWithData.reduce((acc, day) => ({
+        calories: acc.calories + day.calories,
+        protein: acc.protein + day.protein,
+        carbs: acc.carbs + day.carbs,
+        fats: acc.fats + day.fats,
+        fiber: acc.fiber + day.fiber,
+        meals: acc.meals + day.mealsLogged
+      }), { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: 0 });
+
+      const averages = {
+        calories: Math.round(totals.calories / activeDays),
+        protein: Math.round(totals.protein / activeDays),
+        carbs: Math.round(totals.carbs / activeDays),
+        fats: Math.round(totals.fats / activeDays),
+        fiber: Math.round(totals.fiber / activeDays)
+      };
+
+      // Calculate macro distribution
+      const macroCalories = {
+        protein: totals.protein * 4,
+        carbs: totals.carbs * 4,
+        fats: totals.fats * 9
+      };
+      const totalMacroCalories = macroCalories.protein + macroCalories.carbs + macroCalories.fats;
+
+      const macroDistribution = totalMacroCalories > 0 ? [
+        { name: 'Protein', value: Math.round((macroCalories.protein / totalMacroCalories) * 100), color: '#3b82f6' },
+        { name: 'Carbs', value: Math.round((macroCalories.carbs / totalMacroCalories) * 100), color: '#10b981' },
+        { name: 'Fats', value: Math.round((macroCalories.fats / totalMacroCalories) * 100), color: '#f59e0b' }
+      ] : [];
+
+      // Calculate goal adherence
+      const goalAdherence = userGoals ? {
+        calories: userGoals.calories > 0 ? Math.round((averages.calories / userGoals.calories) * 100) : 0,
+        protein: userGoals.protein > 0 ? Math.round((averages.protein / userGoals.protein) * 100) : 0,
+        carbs: userGoals.carbs > 0 ? Math.round((averages.carbs / userGoals.carbs) * 100) : 0,
+        fats: userGoals.fat > 0 ? Math.round((averages.fats / userGoals.fat) * 100) : 0
+      } : { calories: 0, protein: 0, carbs: 0, fats: 0 };
+
+      return {
+        averages,
+        totals,
+        trends: dailyData,
+        macroDistribution,
+        goalAdherence,
+        loggingRate: Math.round((activeDays / totalDays) * 100)
+      };
+    };
+
+    const loadAnalytics = async () => {
     setLoading(true);
     try {
       const userId = user.uid;
@@ -121,106 +213,12 @@ const Analytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+    };
 
-  const calculateAnalytics = (dailyData, userGoals) => {
-    const daysWithData = dailyData.filter(d => d.mealsLogged > 0);
-    const totalDays = dailyData.length;
-    const activeDays = daysWithData.length;
-
-    if (activeDays === 0) {
-      return {
-        averages: { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0 },
-        totals: { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: 0 },
-        trends: dailyData,
-        macroDistribution: [],
-        goalAdherence: { calories: 0, protein: 0, carbs: 0, fats: 0 },
-        loggingRate: 0
-      };
+    if (user?.uid) {
+      loadAnalytics();
     }
-
-    // Calculate averages (only from days with data)
-    const totals = daysWithData.reduce((acc, day) => ({
-      calories: acc.calories + day.calories,
-      protein: acc.protein + day.protein,
-      carbs: acc.carbs + day.carbs,
-      fats: acc.fats + day.fats,
-      fiber: acc.fiber + day.fiber,
-      meals: acc.meals + day.mealsLogged
-    }), { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: 0 });
-
-    const averages = {
-      calories: Math.round(totals.calories / activeDays),
-      protein: Math.round(totals.protein / activeDays),
-      carbs: Math.round(totals.carbs / activeDays),
-      fats: Math.round(totals.fats / activeDays),
-      fiber: Math.round(totals.fiber / activeDays)
-    };
-
-    // Macro distribution (% of calories)
-    const proteinCals = averages.protein * 4;
-    const carbsCals = averages.carbs * 4;
-    const fatsCals = averages.fats * 9;
-    const totalCals = proteinCals + carbsCals + fatsCals || 1;
-
-    const macroDistribution = [
-      { name: 'Protein', value: Math.round((proteinCals / totalCals) * 100), color: '#3b82f6' },
-      { name: 'Carbs', value: Math.round((carbsCals / totalCals) * 100), color: '#10b981' },
-      { name: 'Fats', value: Math.round((fatsCals / totalCals) * 100), color: '#f59e0b' }
-    ];
-
-    // Goal adherence (if goals exist)
-    let goalAdherence = { calories: 0, protein: 0, carbs: 0, fats: 0 };
-    if (userGoals) {
-      goalAdherence = {
-        calories: userGoals.calories ? Math.round((averages.calories / userGoals.calories) * 100) : 0,
-        protein: userGoals.protein ? Math.round((averages.protein / userGoals.protein) * 100) : 0,
-        carbs: userGoals.carbs ? Math.round((averages.carbs / userGoals.carbs) * 100) : 0,
-        fats: userGoals.fats ? Math.round((averages.fats / userGoals.fats) * 100) : 0
-      };
-    }
-
-    return {
-      averages,
-      totals,
-      trends: dailyData,
-      macroDistribution,
-      goalAdherence,
-      loggingRate: Math.round((activeDays / totalDays) * 100)
-    };
-  };
-
-  const calculateComparison = (currentAnalytics, previousDailyData) => {
-    if (previousDailyData.length === 0) {
-      return { calories: 0, protein: 0, carbs: 0, fats: 0 };
-    }
-
-    const prevTotals = previousDailyData.reduce((acc, day) => ({
-      calories: acc.calories + day.calories,
-      protein: acc.protein + day.protein,
-      carbs: acc.carbs + day.carbs,
-      fats: acc.fats + day.fats
-    }), { calories: 0, protein: 0, carbs: 0, fats: 0 });
-
-    const prevAverages = {
-      calories: Math.round(prevTotals.calories / previousDailyData.length),
-      protein: Math.round(prevTotals.protein / previousDailyData.length),
-      carbs: Math.round(prevTotals.carbs / previousDailyData.length),
-      fats: Math.round(prevTotals.fats / previousDailyData.length)
-    };
-
-    return {
-      calories: calculatePercentChange(prevAverages.calories, currentAnalytics.averages.calories),
-      protein: calculatePercentChange(prevAverages.protein, currentAnalytics.averages.protein),
-      carbs: calculatePercentChange(prevAverages.carbs, currentAnalytics.averages.carbs),
-      fats: calculatePercentChange(prevAverages.fats, currentAnalytics.averages.fats)
-    };
-  };
-
-  const calculatePercentChange = (oldVal, newVal) => {
-    if (oldVal === 0) return newVal > 0 ? 100 : 0;
-    return Math.round(((newVal - oldVal) / oldVal) * 100);
-  };
+  }, [user, selectedPeriod]);
 
   const handleExportCSV = async () => {
     try {

@@ -214,10 +214,11 @@ export const getWeeklyGoalAdherence = (weeklyData, goals) => {
   let daysMetAllMacros = 0;
 
   dailyTotalsArray.forEach(([_, dayData]) => {
-    const caloriePercent = (dayData.calories / goals.calories) * 100;
-    const proteinPercent = (dayData.protein / goals.protein) * 100;
-    const carbsPercent = (dayData.carbs / goals.carbs) * 100;
-    const fatPercent = (dayData.fat / goals.fat) * 100;
+    // Calculate percentages only if goals are valid (> 0)
+    const caloriePercent = goals.calories > 0 ? (dayData.calories / goals.calories) * 100 : 0;
+    const proteinPercent = goals.protein > 0 ? (dayData.protein / goals.protein) * 100 : 0;
+    const carbsPercent = goals.carbs > 0 ? (dayData.carbs / goals.carbs) * 100 : 0;
+    const fatPercent = goals.fat > 0 ? (dayData.fat / goals.fat) * 100 : 0;
 
     if (caloriePercent >= 90 && caloriePercent <= 110) daysMetCalories++;
     if (proteinPercent >= 90 && proteinPercent <= 110) daysMetProtein++;

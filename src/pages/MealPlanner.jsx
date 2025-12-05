@@ -55,39 +55,38 @@ const MealPlanner = () => {
 
   // Fetch user goals and profile
   useEffect(() => {
+    const loadUserGoals = async () => {
+      const result = await getUserGoals(userId);
+      if (result.success && result.data) {
+        setUserGoals(result.data);
+      }
+    };
+
+    const loadUserProfileAndMeals = async () => {
+      setLoadingWeeklyMeals(true);
+      try {
+        // Fetch user profile
+        const profileResult = await getUserProfile(userId);
+        if (profileResult.success) {
+          const profile = profileResult.data;
+
+          // Fetch AI-generated meals with allergy filtering
+          const meals = await getMealsForUser(profile);
+          setWeeklyMeals(meals);
+        }
+      } catch (error) {
+        logError('MealPlanner.loadUserProfileAndMeals', error);
+        toast.error('Failed to load weekly meals');
+      } finally {
+        setLoadingWeeklyMeals(false);
+      }
+    };
+
     if (userId) {
       loadUserGoals();
       loadUserProfileAndMeals();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
-
-  const loadUserGoals = async () => {
-    const result = await getUserGoals(userId);
-    if (result.success && result.data) {
-      setUserGoals(result.data);
-    }
-  };
-
-  const loadUserProfileAndMeals = async () => {
-    setLoadingWeeklyMeals(true);
-    try {
-      // Fetch user profile
-      const profileResult = await getUserProfile(userId);
-      if (profileResult.success) {
-        const profile = profileResult.data;
-
-        // Fetch AI-generated meals with allergy filtering
-        const meals = await getMealsForUser(profile);
-        setWeeklyMeals(meals);
-      }
-    } catch (error) {
-      logError('MealPlanner.loadUserProfileAndMeals', error);
-      toast.error('Failed to load weekly meals');
-    } finally {
-      setLoadingWeeklyMeals(false);
-    }
-  };
 
   const mealTypes = [
     { id: 'breakfast', name: 'Breakfast', icon: Coffee, emoji: '🌅' },
