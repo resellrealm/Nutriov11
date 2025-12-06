@@ -1,7 +1,7 @@
 import UIKit
 import Capacitor
 
-@objc(App.SceneDelegate)
+@objc
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
